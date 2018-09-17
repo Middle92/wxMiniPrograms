@@ -1,0 +1,27 @@
+{
+  "pages": [
+    "pages/index/main",
+    "pages/logs/main",
+    "pages/counter/main",
+    "pages/home/main",
+    "pages/personal/main",
+    "pages/editparsonal/main",
+    "pages/income/main",
+    "pages/recommend/main",
+    "pages/excellentSupplier/main",
+    "pages/advertisement/main",
+    "pages/purchaseDefault/main",
+    "pages/purchaseOrderDefault/main",
+    "pages/statement/main",
+    "pages/statementDefault/main",
+    "pages/release/main",
+    "pages/takeCash/main",
+    "pages/otherTakeCash/main"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1480fa",
+    "navigationBarTitleText": "百采号",
+    "navigationBarTextStyle": "white"
+  }
+}
