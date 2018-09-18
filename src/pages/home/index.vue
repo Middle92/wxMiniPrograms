@@ -13,7 +13,7 @@
         <ul class="icons">
             <li v-for="(item, index) in iconData" :key="index" @click="item.callback">
                 <div :class="item.class + ' icon'">
-                    <img mode="widthFix" :src="item.icon" alt="">
+                    <img mode="widthFix" style="width: 20px;" :src="item.icon" alt="">
                 </div>
                 <span>{{item.title}}</span>
             </li>
@@ -30,7 +30,7 @@
                 <ul v-for="(item, index) in tabData" :key="index" v-show="tab[index].active">
                     <li v-for="(ite, inde) in item" :key="inde">
                         <div class="product">
-                            <img :src='ite.url' />
+                            <img :src='ite.url'/>
                             <div class='info'>
                                 <p class='title'>{{ite.title}}</p>
                                 <div class='detail-p'>
@@ -46,7 +46,7 @@
                         </div>
                         <ul class="share" v-if="ite.read">
                             <li v-for="(it, ind) in share" :key="ind" @click="it.callback">
-                                <img :src="it.icon" alt="">
+                                <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
                                 {{it.title}}
                             </li>
                         </ul>
@@ -492,23 +492,29 @@ image {
 .icons {
   font-size: 0.25rem;
   width: 100%;
+  display: flex;
 }
 
 .icons li {
-  width: 25%;
-  display: inline-block;
-  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;/*垂直居中*/
+  justify-content: center;/*水平居中*/
   margin: 0.2rem 0;
+  font-size: 12px;
+  color: #555555;
 }
 
 .icon {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 45px;
+  height: 45px;
   box-sizing: border-box;
-  padding: 0.2rem;
   border-radius: 50%;
-  margin: auto;
-  margin-bottom: 0.1rem;
+  display: flex;
+  align-items: center;/*垂直居中*/
+  justify-content: center;/*水平居中*/
+  margin-bottom: 10px;
 }
 
 .tab {
@@ -519,20 +525,21 @@ image {
   width: 100%;
   box-sizing: border-box;
   background-color: #ffffff;
+  color: #555555;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .tab .tab-toggle > li {
   width: 50%;
   display: inline-block;
   text-align: center;
-  font-size: 16px;
-  padding: 10px 0;
+  font-size: 14px;
 }
 
 .tab .tab-toggle > li span {
   display: inline-block;
-  line-height: 30px;
-  height: 30px;
+  line-height: 44px;
+  height: 44px;
   box-sizing: border-box;
 }
 
@@ -547,33 +554,33 @@ image {
 }
 
 .product {
-  padding: 10px;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .product > image {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
+  margin-right: 10px;
 }
 
 .product > .info {
   display: inline-block;
   vertical-align: middle;
-  padding: 0 10px;
   flex: 1;
 }
 
 .product > .info > .title {
   display: block;
-  font-size: 0.3rem;
+  font-size: 15px;
   margin-bottom: 5px;
-  color: #333;
+  color: #333333;
 }
 
 .product > .info > .detail-p {
-  font-size: 0.26rem;
+  font-size: 12px;
   color: #666666;
 }
 
@@ -596,23 +603,31 @@ image {
 }
 
 .share {
-  line-height: 1rem;
   border-top: 0.01rem solid #e9e9e9;
+  padding: 10px 0;
 }
 
 .share li {
   display: inline-block;
   width: 33.33%;
-  font-size: 0.28rem;
+  font-size: 12px;
+  height: 23px;
+  line-height: 23px;
+  box-sizing: border-box;
   text-align: center;
   color: #3f8bf4;
 }
 
-.share li img {
-  width: 0.3rem;
-  height: 0.3rem;
-  vertical-align: middle;
+.share li:not(:last-child) {
+  border-right: 1px solid #e9e9e9;
 }
+
+/* .share li img {
+  width: 12px;
+  height: 0.3rem;
+  margin-top: -3px;
+  vertical-align: middle;
+} */
 
 /* icon */
 .plusIcon,

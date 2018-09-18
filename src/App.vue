@@ -34,9 +34,10 @@ button.primary {
   color: #fff;
 }
 
-button.disabled {
-  background-color: #ccc;
+button[disabled]:not([type]) {
+  background-color: #3e8af4;
   color: #fff;
+  opacity: .5;
 }
 
 .profit {

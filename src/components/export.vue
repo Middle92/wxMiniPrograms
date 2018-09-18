@@ -45,50 +45,61 @@ export default {
     }
 
     .export-element {
-        width:80%;
+        width:290px;
         margin:auto;
         background-color:#fff;
         border-radius: 6px;
-        padding: 20px;
+        padding: 15px;
     }
 
     .export-element h1 {
-        font-size: 18px;
+        font-size: 14px;
         text-align: center;
-        margin-bottom: 20px;
+        color: #555555;
+        height: 45px;
+        line-height: 45px;
+        /* margin-bottom: 20px; */
     }
 
     .export-content {
         display: flex;
         vertical-align: middle;
         align-items: center;
-        padding-bottom: 20px;
+        margin-top: 10px;
+        /* padding-bottom: 20px; */
         border-bottom: 1px solid #dcdcdc;
-        margin-bottom: 20px;
+        /* margin-bottom: 20px; */
+        height: 50px;
+        line-height: 50px;
     }
 
     .export-content label {
         margin-right: 10px;
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .export-content input {
         flex: 1;
-        font-size: 14px;
+        font-size: 11px;
     }
 
     .export-btns {
         width: 100%;
         display: table;
+        margin-top: 40px;
+        margin-bottom: 20px;
     }
 
     .export-btns .btn {
         width: 50%;
         display: table-cell;
+        text-align: center;
     }
 
     .export-btns .btn button {
-        width: 80%;
+        display: inline-block;
+        font-size: 15px;
+        width: 50%;
     }
 
     .hide {

@@ -1,8 +1,8 @@
 <template>
     <div class='container'>
-        <img class="bg-image" :src="bgiamge" alt="">
+        <img mode="widthFix" class="bg-image" :src="bgiamge" alt="">
         <div class="ad-image">
-            <img v-for="(item, index) in adimages" :key="index" :src="item" alt="">
+            <img mode="widthFix" v-for="(item, index) in adimages" :key="index" :src="item" alt="">
             <div class="ad-button">
                 <button>立即邀请同行</button>
             </div>
@@ -30,7 +30,7 @@ export default {
                 }}, 
                 {title: '有奖发布', callback: () => {
                     wx.navigateTo({
-                        url: '/pages/income/main'
+                        url: '/pages/purchaseDefault/main'
                     })
                 }}
             ]

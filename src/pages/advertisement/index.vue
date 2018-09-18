@@ -24,7 +24,7 @@ export default {
                 }}, 
                 {title: '有奖发布', callback: () => {
                     wx.navigateTo({
-                        url: '/pages/income/main'
+                        url: '/pages/purchaseDefault/main'
                     })
                 }}
             ]

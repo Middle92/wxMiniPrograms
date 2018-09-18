@@ -29,7 +29,7 @@
             </li>
         </ul>
         <div class="export">
-            <button class="primary">全部导出</button>
+            <button class="primary" @click="exportFun">全部导出</button>
         </div>
         <exportComponent :visibility="visibility" @visibility="visibilityFun"></exportComponent>
     </div>
@@ -133,7 +133,6 @@ export default {
     },
     methods: {
         touchstart(e) {
-            // console.log("touchS", e);
             if(e.mp.touches.length==1){
                 if(this.touchIndex == e.currentTarget.dataset.index) {
                     this.startStyle = this.touchStyle;
@@ -146,7 +145,6 @@ export default {
             }
         },
         touchmove(e) {
-            // console.log("touchM:", e);
             if(e.mp.touches.length==1){
                 let moveX = -(this.startX - e.mp.touches[0].clientX);
                 if(moveX < 0) {
@@ -159,7 +157,6 @@ export default {
             }
         },
         touchend(e) {
-            // console.log('touchend', e)
             if(e.mp.changedTouches.length==1){
                 if(this.touchStyle < -(this.delBtnWidth/2)) {
                     this.touchStyle = -this.delBtnWidth;
@@ -188,9 +185,7 @@ export default {
 }
 
 .lists > .list {
-    /* box-shadow:0rpx 5rpx 5rpx #ddd inset; */
     position: relative;
-    /* margin-bottom:5px; */
     background-color: #cdcdcd
 }
 
@@ -205,9 +200,6 @@ export default {
 .list-content {
     padding: 10px;
     display: flex;
-    /* position:absolute;
-    top: 0;
-    left: 0; */
     width: 100%;
     box-sizing: border-box;
     float: left;
@@ -219,8 +211,8 @@ export default {
 }
 
 .list-content > img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
 }
 
 .list-content > .info {
@@ -229,20 +221,20 @@ export default {
 }
 
 .info > .title {
-    font-size: 18px;
-    color: #313131;
+    font-size: 15px;
+    color: #333;
     margin-bottom: 5px;
 }
 
 .info > .information {
-    font-size: 14px;
-    color: #6e6e6e;
+    font-size: 12px;
+    color: #666666;
     margin-bottom: 10px;
 }
 
 .info > .class {
     font-size: 12px;
-    color: #878787;
+    color: #888888;
 }
 
 .list-operating {
