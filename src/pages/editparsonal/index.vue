@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import store from '../../stores';
+import store from '@/stores';
 export default {
     data() {
         return {
@@ -33,7 +33,7 @@ export default {
     },
     methods: {
         editData() {
-            store.commit("setParsonal", { [this.nagitationKey]: this.value });
+            store.commit("editParsonal", { [this.nagitationKey]: this.value });
             wx.navigateBack()
         }
     }

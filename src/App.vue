@@ -34,9 +34,14 @@ button.primary {
   color: #fff;
 }
 
+button.default {
+  border: 1px solid #419AFF;
+  color: #419AFF;
+}
+
 button[disabled]:not([type]) {
   background-color: #3e8af4;
-  color: #fff;
+  color: #fff !important;
   opacity: .5;
 }
 

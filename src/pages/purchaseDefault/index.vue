@@ -1,5 +1,5 @@
 <template>
-    <div class="container" :style="{overflow: (visibilityPop || visibilityVerification) ? 'hidden' : 'initial'}">
+    <div class="container" :style="{overflow: (visibilityPop || VerificationPop) ? 'hidden' : 'initial'}">
         <div class="form-group">
             <label for="">产品</label>
             <div class="flex-1">
@@ -16,10 +16,6 @@
         <div class="form-group">
             <label for="">单位</label>
             <div class="flex-1">
-                <!-- <div class="select">
-                    请选择
-                    <span class="holder-right">></span>
-                </div> -->
                 <picker :value="unitValue" :range="unit" @change="bindPickerChange">
                     <div class="picker" :class="{placeholder: !unitValue}">
                     {{unitValue ? unitValue : '请选择'}}
@@ -32,10 +28,6 @@
         <div class="form-group">
             <label for="">采购截至时间</label>
             <div class="flex-1">
-                <!-- <div class="select">
-                    请选择
-                    <span class="holder-right">></span>
-                </div> -->
                 <picker mode="date" :value="deadline" @change="bindDateChange">
                     <div class="picker" :class="{placeholder: !deadline}">
                     {{deadline ? deadline : '请选择'}}
@@ -51,7 +43,6 @@
         </div>
 
         <div class="recorder-group">
-            <!-- <div v-if="recorder" class="recorderFile" @click="playAudio">{{recorder}}</div>  @touchend="touchend" -->
             <div class="recorder">
                 <div class="recorder-icons">
                     <div class="recorder-icon">
@@ -71,13 +62,7 @@
                     <div class="recorder-box">
                         {{recorder.duration/1000}}
                     </div>
-                    <!-- {{JSON.stringify(recorder)}} -->
                 </div>
-                <!-- <div class="recorder-icons" :class="{hide: !showIcon}">
-                    <div class="recorder-icon" v-for="(item, index) in recorderIcons" :key="index" @click="item.callback">
-                        <img mode="widthFix" :src="item.icon" alt="" style="width:30px;">
-                    </div>
-                </div> -->
             </div>
         </div>
 
@@ -121,10 +106,10 @@
                 style="width:15px;"> 
             展开企业信息
         </p>
-
-        <releasePopComponent :visibility="visibilityPop" @visibility="visibilityPopFun"></releasePopComponent>
         
-        <releaseVerificationComponent :visibility="visibilityVerification" @visibility="visibilityVerificationFun"></releaseVerificationComponent>
+        <releasePopComponent :visibility="visibilityPop" @visibility="visibilityPopFun"></releasePopComponent>
+
+        <releaseVerificationComponent :visibility="VerificationPop" @visibility="VerificationPopFun"></releaseVerificationComponent>
     </div>
 </template>
 
@@ -133,7 +118,8 @@ const recorderManager = wx.getRecorderManager();
 const innerAudioContext = wx.createInnerAudioContext();
 import store from "../../stores";
 import releasePopComponent from "../../components/releasePop";
-import releaseVerificationComponent from "../../components/releaseVerification";
+import releaseVerificationComponent from "../../components/releaseVerifications";
+import wxRequest from "@/utils/request";
 
 export default {
   data() {
@@ -181,7 +167,7 @@ export default {
       // 弹窗展示
       visibilityPop: false,
       // 验证弹窗
-      visibilityVerification: false
+      VerificationPop: false
     };
   },
   methods: {
@@ -215,9 +201,9 @@ export default {
     },
     // 点击企业信息
     companyFun() {
-      let { company, companySite, job, product, brand } = this.parsonalData;
+      let { company, companyAddress, jobTitle, mainProduct, trademark } = this.parsonalData;
 
-      if (company && companySite && job && product && brand) {
+      if (company && companyAddress && jobTitle && mainProduct && trademark) {
         this.company = !this.company;
       } else {
         this.visibilityPop = true;
@@ -243,17 +229,83 @@ export default {
     },
     // 弹窗回调
     visibilityPopFun(options) {
-        this.visibilityPop = options
+      this.visibilityPop = options;
     },
-    visibilityVerificationFun(options) {
-        this.visibilityVerification = options
+    VerificationPopFun(options) {
+      this.VerificationPop = options;
     },
     // 提交
     submit() {
-        this.visibilityVerification = true;
+      let obj = {
+        product: this.product, // 产品名称
+        number: this.productNumber, // 数量
+        unit: this.unitValue, // 单位
+        buyDeadline: this.deadline, // 采购截止时间（yyyy-MM-dd HH:mm:ss）
+        price: this.productPrice, // 价格
+        audioFile: 'http://hao.haolingsheng.com/ring/000/995/fdd1115ac2c3e1dc84ea878082741e1b.mp3', // this.recorder, // 语音文件路劲
+        explained: this.supplementarySpecification, // 补充说明
+        imgs: this.chooseImageArr.join(',') // 图片路径
+      }
+      let returnName = (str) => {
+        switch(str) {
+          case 'product':
+            return '产品';
+            break;
+          case 'number':
+            return '数量';
+            break;
+          case 'unit':
+            return '单位';
+            break;
+          case 'buyDeadline':
+            return '采购截至时间';
+            break;
+          case 'price':
+            return '价格';
+            break;
+          case 'audioFile':
+            return '语音';
+            break;
+          case 'explained':
+            return '请输入补充说明';
+            break;
+          case 'imgs':
+            return '添加图片';
+            break;
+        }
+      }
+      for(let key in obj) {
+        if(!obj[key]) {
+          wx.showToast({
+            icon: 'none',
+            title: `${returnName(key)}不能未空！`,
+          })
+          return false;
+        }
+      }
+
+      wxRequest({
+        url: "/PurchaseController/publish",
+        method: 'POST',
+        data: obj
+      }, true).then((response) => {
+        console.log(response);
+        this.VerificationPop = true;
+      })
+      // let { mobile } = this.parsonalData;
+
+      // if (mobile) {
+        // 已填写联系方式
+        // wx.navigateTo({
+          // url: "/pages/success/main"
+        // });
+      // } else {
+        // 没有填写联系方式
+        
+      // }
     }
   },
-  mounted() {
+  mounted(options) {
     let timer;
     // 开始录音
     recorderManager.onStart(() => {
@@ -310,11 +362,14 @@ export default {
   },
   watch: {
     product(value, oldValue) {
-      this.productLengthValue = this.productLength - value.length;
+      if(value) {
+        this.productLengthValue = this.productLength - value.length;
+      }
     },
     supplementarySpecification(value, oldValue) {
-      this.supplementarySpecificationLengthValue =
-        this.supplementarySpecificationLength - value.length;
+      if(value) {
+        this.supplementarySpecificationLengthValue = this.supplementarySpecificationLength - value.length;
+      }
     }
   },
   computed: {
@@ -325,7 +380,13 @@ export default {
   components: {
     releasePopComponent,
     releaseVerificationComponent
-  }
+  },
+  onLoad(options) {
+    // console.log('page index onLoad', options, this);
+    if(options.init) {
+      Object.assign(this.$data, this.$options.data())
+    }
+  },
 };
 </script>
 
@@ -439,7 +500,6 @@ export default {
 .choose-image .choose-item {
   width: 100px;
   height: 100px;
-  padding: 5px;
   box-sizing: border-box;
   overflow: hidden;
   border: 1px solid #dddddd;

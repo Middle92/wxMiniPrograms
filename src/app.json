@@ -16,7 +16,9 @@
     "pages/statementDefault/main",
     "pages/release/main",
     "pages/takeCash/main",
-    "pages/otherTakeCash/main"
+    "pages/otherTakeCash/main",
+    "pages/success/main",
+    "pages/share/main"
   ],
   "window": {
     "backgroundTextStyle": "light",

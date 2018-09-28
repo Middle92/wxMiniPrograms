@@ -2,21 +2,14 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 Vue.use(Vuex);
+import wxRequest from '@/utils/request';
 
 export default new Vuex.Store({
     state: {
-        userinfo: {},
-        parsonal: {
-            image: ["http://tmp/wxb5c983f39f5bc319.o6zAJs56qzfrr4y9R5fzebfi0YFs.uD7LeVDBFquLdcdbe21f04412580ece94c2b2bf4ef32.jpg"],
-            brand:"brank",
-            company:"讯猫",
-            companySite:"广州越秀",
-            job:"攻城狮",
-            mail:"123@123.com",
-            name:"吴彦祖",
-            phone:"13800138000",
-            product:"面向对象",
-        }
+        userinfo: {}, // 用户信息
+        code: null, // 微信授权码
+        requestKey: null, // 接口请求密匙
+        parsonal: {} // 个人信息
     },
     mutations: {
         setUserInfo(state, userinfo) {
@@ -24,6 +17,37 @@ export default new Vuex.Store({
         },
         setParsonal(state, obj) {
             state.parsonal = Object.assign({}, state.parsonal, obj);
+        },
+        setCode(state, code) {
+            state.code = code;
+        },
+        setRequestKey(state, key) {
+            state.requestKey = key;
+        },
+        editParsonal(state, obj) {
+            for(let key in obj) {
+                wxRequest({
+                    url: '/buyerController/updateInfo',
+                    method: 'POST',
+                    data: { [key]: obj[key] }
+                }, true).then((response) => {
+                    state.parsonal = Object.assign({}, state.parsonal, obj);
+                })
+            }
+        }
+    },
+    actions: {
+        setUserInfo(context, userinfo) {
+            context.commit('setUserInfo', userinfo)
+        },
+        setParsonal(context, obj) {
+            context.commit('setParsonal', obj)
+        },
+        setCode(context, code) {
+            context.commit('setCode', code)
+        },
+        setRequestKey(context, key) {
+            context.commit('setRequestKey', key)
         }
     }
 })

@@ -3,10 +3,10 @@
         <div v-for="(item, index) in personalList" :key="index" :data-index="index" class='personal-item' @click="item.clickType(index)" :class="{mb20: index === 3}">
             <div class='input'>
                 <p class="title">{{item.title}}</p>
-                <p v-if="parsonalData[item.key] && item.key != 'image'">
+                <p v-if="parsonalData[item.key] && item.key != 'photo'">
                   {{parsonalData[item.key]}}
                 </p>
-                <img v-else-if="parsonalData[item.key] && item.key == 'image'" :src="parsonalData[item.key]" alt="">
+                <img v-else-if="parsonalData[item.key] && item.key == 'photo'" :src="parsonalData[item.key]" alt="">
                 <p v-else>{{item.placeholder}}</p>
             </div>
         </div>
@@ -18,13 +18,15 @@
 
 <script>
 import store from "../../stores";
+import wxRequest from "../../utils/request";
+
 export default {
   data() {
     return {
       personalList: [
         {
           title: "头像",
-          key: "image",
+          key: "photo",
           placeholder: ">",
           clickType: this.chooseImage
         },
@@ -36,13 +38,13 @@ export default {
         },
         {
           title: "邮箱",
-          key: "mail",
+          key: "mailbox",
           placeholder: "未填写 >",
           clickType: this.editType1
         },
         {
           title: "手机号码",
-          key: "phone",
+          key: "mobile",
           placeholder: "未填写 >",
           clickType: this.editType1
         },
@@ -59,8 +61,8 @@ export default {
           clickType: this.release
         },
         {
-          title: "微信号",
-          key: "wechatNumber",
+          title: "微信昵称",
+          key: "nickname",
           placeholder: ">",
           clickType: function() {}
         },
@@ -72,34 +74,34 @@ export default {
         },
         {
           title: "公司地址",
-          key: "companySite",
+          key: "companyAddress",
           placeholder: "未填写 >",
           clickType: this.editType1
         },
         {
           title: "所在职位",
-          key: "job",
+          key: "jobTitle",
           placeholder: "未填写 >",
           clickType: this.editType1
         },
         {
           title: "主营产品",
-          key: "product",
+          key: "mainProduct",
           placeholder: "未填写 >",
           clickType: this.editType1
         },
         {
           title: "品牌",
-          key: 'brand',
+          key: 'trademark',
           placeholder: "未填写 >",
           clickType: this.editType1
         },
-        {
-          title: "新手引导",
-          placeholder: ">",
-          key: "guidance",
-          clickType: function() {}
-        }
+        // {
+        //   title: "新手引导",
+        //   placeholder: ">",
+        //   key: "guidance",
+        //   clickType: function() {}
+        // }
       ]
     };
   },
@@ -110,7 +112,6 @@ export default {
   },
   watch: {
     parsonalData(val, oldvalue){
-      console.log(val, oldvalue)
     }
   },
   methods: {
@@ -131,8 +132,8 @@ export default {
       wx.chooseImage({
         count: 1,
         success(res) {
-          let tempFilePaths = res.tempFilePaths;
-          store.commit("setParsonal", { image: tempFilePaths });
+          let tempFilePaths = res.tempFilePaths[0];
+          store.commit("editParsonal", { photo: tempFilePaths });
         }
       });
     },
