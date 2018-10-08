@@ -24,7 +24,7 @@ function wxRequest(obj, hasToken, duration = 3000) {
                 }
             }
         })
-
+        
         setTimeout(() => {
             requestTask.abort()
         }, duration)

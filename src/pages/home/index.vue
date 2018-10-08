@@ -1,13 +1,6 @@
 <template>
     <div class='container'>
         <!-- 顶部广告 -->
-        <!-- <swiper>
-            <block v-for="(item, index) in imgUrls" :key="index">
-                <swiper-item>
-                    <image :src="item" class="slide-image" height="150"/>
-                </swiper-item>
-            </block>
-        </swiper> -->
         <image :src="imgUrls" class="slide-image" @click="advertisement"/>
         <!-- 图标 -->
         <ul class="icons">
@@ -27,29 +20,29 @@
             </ul>
 
             <div class="tab-content">
-                <ul v-for="(item, index) in tabData" :key="index" v-show="tab[index].active">
-                    <li v-for="(ite, inde) in item" :key="inde">
-                        <div class="product">
-                            <img :src='ite.url'/>
-                            <div class='info'>
-                                <p class='title'>{{ite.title}}</p>
-                                <div class='detail-p'>
-                                    <p>数量：{{ite.num}}</p>
-                                    <p>规格：{{ite.standard}}</p>
-                                </div>
-                                <ul class="additional">
-                                    <li>阅读：{{ite.read}}次</li>
-                                    <li>报价：{{ite.offer}}次</li>
-                                    <li>收益：{{ite.profit}}元</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <ul class="share" v-if="ite.read">
-                            <li v-for="(it, ind) in share" :key="ind" @click="it.callback">
-                                <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
-                                {{it.title}}
-                            </li>
-                        </ul>
+                <ul v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
+                    <li v-for="(ite, inde) in item.data" :key="inde">
+                      <div class="product" :data-id="ite.id" @click="toDefault">
+                          <img :src='ite.productImg'/>
+                          <div class='info'>
+                              <p class='title'>{{ite.product}}</p>
+                              <div class='detail-p'>
+                                  <p>数量：{{ite.number }}</p>
+                                  <p>规格：{{ite.unit}}</p>
+                              </div>
+                              <ul class="additional">
+                                  <li>阅读：{{ite.browseCount}}次</li>
+                                  <li>报价：{{ite.offerCount}}次</li>
+                                  <li>收益：{{ite.totalIncome}}元</li>
+                              </ul>
+                          </div>
+                      </div>
+                      <ul class="share"><!-- v-if="ite.read" -->
+                          <li v-for="(it, ind) in share" :key="ind" :data-id="ite.id" @click="it.callback">
+                              <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
+                              {{it.title}}
+                          </li>
+                      </ul>
                     </li>
                 </ul>
             </div>
@@ -60,24 +53,18 @@
                 <image src='/static/icon01.png'/>
             </div>
         </div>
-
-        <div class="modle"  :class="{'hide': !visibility}">
-            
-        </div>
     </div>
 </template>
 
 <script>
 import store from "@/stores";
 import utils from "@/utils/index";
+import wxRequest from "../../utils/request";
 
 var query = wx.createSelectorQuery();
 export default {
   data() {
     return {
-      // imgUrls: [
-      //     '../../../static/bg-1.png',
-      // ],
       imgUrls: "/static/bg-1.png",
       iconData: [
         {
@@ -121,38 +108,27 @@ export default {
           }
         }
       ],
-      tab: [{ title: "采购中", active: true }, { title: "已结束" }],
-      tabData: [
-        // 开始
-        [
-          {
-            url: "/static/test_header.jpg",
-            title: "采购LED灯带1",
-            standard: "EVDF1",
-            num: "5件",
-            read: 10,
-            offer: 3,
-            profit: utils.fixed(20.0, 2)
-          }
-        ],
-        // 已结束
-        [
-          {
-            url: "/static/test_header.jpg",
-            title: "采购LED灯带4",
-            standard: "EVDF4",
-            num: "5件"
-          }
-        ]
+      tab: [
+        {
+          title: "采购中",
+          active: true,
+          pageNo: 1,
+          status: 2,
+          data: []
+        },
+        {
+          title: "已结束",
+          pageNo: 1,
+          status: 3,
+          data: []
+        }
       ],
       share: [
         {
           title: "邀请报价",
           icon: "/static/icon-7.png",
-          callback() {
-            wx.navigateTo({
-              url: "/pages/purchaseOrderDefault/main"
-            });
+          callback: (e) => {
+            this.toDefault(e, 'offer')
           }
         },
         {
@@ -162,7 +138,6 @@ export default {
             wx.navigateTo({
               url: "/pages/share/main"
             });
-            
           }
         },
         {
@@ -175,9 +150,6 @@ export default {
           }
         }
       ],
-      canvasWidth: 400,
-      canvasHeight: 200,
-      visibility: false,
       // 滚动tab 固定顶部
       scrollTop: null,
       fixedTab: false
@@ -204,10 +176,10 @@ export default {
       this.tab.map(item => {
         item.active = !item.active;
       });
-      if(this.fixedTab) {
-          wx.pageScrollTo({
-              scrollTop: this.scrollTop
-          })
+      if (this.fixedTab) {
+        wx.pageScrollTo({
+          scrollTop: this.scrollTop
+        });
       }
     },
     advertisement() {
@@ -218,6 +190,12 @@ export default {
     release() {
       wx.navigateTo({
         url: "/pages/purchaseDefault/main?init=true"
+      });
+    },
+    toDefault(e, type) {
+      let id = e.currentTarget.dataset.id
+      wx.navigateTo({
+        url: `/pages/purchaseOrderDefault/main?${type ? 'type=offer&' : ''}id=${id}`
       });
     }
   },
@@ -232,9 +210,54 @@ export default {
         })
         .exec();
     });
+
+    this.tab.map(item => {
+      store.getters
+        .purchaseList({
+          pageNo: item.pageNo,
+          status: item.status
+        })
+        .then(response => {
+          item.data = response.data.list;
+        });
+    });
   },
   onPageScroll: function(e) {
     this.fixedTab = e.scrollTop >= this.scrollTop;
+  },
+  onPullDownRefresh: function(e) {
+    this.tab.map(item => {
+      if(item.active) {
+        item.pageNo = 1;
+        store.getters
+          .purchaseList({
+            pageNo: item.pageNo,
+            status: item.status
+          })
+          .then(response => {
+            item.data = response.data.list;
+            if(response.data.list.length > 0) {
+              item.pageNo++;
+            }
+            wx.stopPullDownRefresh();
+          });
+      }
+    });
+  },
+  onReachBottom: function() {
+    this.tab.map(item => {
+      store.getters
+        .purchaseList({
+          pageNo: item.pageNo,
+          status: item.status
+        })
+        .then(response => {
+          item.data = [...item.data, ...response.data.list];
+          if(response.data.list.length > 0) {
+            item.pageNo++;
+          }
+        });
+    });
   }
 };
 </script>
@@ -262,8 +285,8 @@ image {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;/*垂直居中*/
-  justify-content: center;/*水平居中*/
+  align-items: center; /*垂直居中*/
+  justify-content: center; /*水平居中*/
   margin: 0.2rem 0;
   font-size: 12px;
   color: #555555;
@@ -275,8 +298,8 @@ image {
   box-sizing: border-box;
   border-radius: 50%;
   display: flex;
-  align-items: center;/*垂直居中*/
-  justify-content: center;/*水平居中*/
+  align-items: center; /*垂直居中*/
+  justify-content: center; /*水平居中*/
   margin-bottom: 10px;
 }
 

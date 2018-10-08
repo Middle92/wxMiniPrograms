@@ -2,16 +2,16 @@
     <div class="container">
         <ul class="statement">
             <li class="statement-item" v-for="(item, index) in Data" :key="index">
-                <img src="/static/test-bg-1.png" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+                <img :src="item.productImg" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                 <div class="statement-default">
-                    <p class="statement-title">{{item.title}}</p>
+                    <p class="statement-title">{{item.product}}</p>
                     <div class="statement-info">
-                        <p>规格：{{item.spec}}</p>
+                        <p>规格：{{item.complainContent}}</p>
                         <p>数量：{{item.number}}</p>
                     </div>
                 </div>
                 <div class="statement-btn">
-                    <button class="primary" @click="statementDefault">申述</button>
+                    <button class="primary" :data-id="item.id" @click="statementDefault">申述</button>
                 </div>
             </li>
         </ul>
@@ -19,92 +19,38 @@
 </template>
 
 <script>
+import store from '@/stores';
+import wxRequest from '@/utils/request';
+
 export default {
     data() {
         return {
-            Data: [
-                {
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },{
-                    title: '采购LED灯带',
-                    spec: 'EVDF11',
-                    number: '5件'
-                },
-            ]
+            Data: []
         }
     },
     methods: {
-        statementDefault() {
+        statementDefault(e) {
+            console.log()
             wx.navigateTo({
-                url: "/pages/statementDefault/main",
+                url: `/pages/statementDefault/main?id=${e.currentTarget.dataset.id}`,
             });
         }
+    },
+    mounted() {
+        wxRequest({
+            url: '/feedbackController/list'
+        }, true).then(response => {
+            this.Data = response.data.list;
+            store.commit('setStatement', this.Data)
+        })
+    },
+    onPullDownRefresh() {
+        wxRequest({
+            url: '/feedbackController/list'
+        }, true).then(response => {
+            this.Data = response.data.list;
+            store.commit('setStatement', this.Data)
+        })
     }
 }
 </script>

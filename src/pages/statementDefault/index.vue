@@ -1,9 +1,9 @@
 <template>
     <div class="container">
         <div class="statement-default">
-            <img src="/static/test_header.jpg" alt="">
+            <img :src="Data.productImg" alt="">
             <div class="statement-default-default">
-                <p class="statement-default-title">{{Data.title}}</p>
+                <p class="statement-default-title">{{Data.product}}</p>
                 <div class="statement-default-info">
                     <p>规格：{{Data.spec}}</p>
                     <p>数量：{{Data.number}}</p>
@@ -12,7 +12,7 @@
         </div>
 
         <div class="statement-reason">
-            <p>投诉理由：<span>{{Data.complaintReasons}}</span></p>
+            <p>投诉理由：<span>{{Data.complainContent}}</span></p>
             <textarea></textarea>
             <div class="statement-default-btn">
                 <button class="primary">立即申述</button>
@@ -22,16 +22,17 @@
 </template>
 
 <script>
+import store from '@/stores';
+
 export default {
     data() {
         return {
-            Data: {
-                title: '采购LED灯带',
-                spec: 'EVDF11',
-                number: '5件',
-                complaintReasons: '产品质量存在问题'
-            }
+            Data: {}
         }
+    },
+    onLoad(query) {
+        console.log(this.Data = store.getters.filterStatemen(query.id)[0]);
+
     }
 }
 </script>

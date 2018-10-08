@@ -11,6 +11,15 @@ export default new Vuex.Store({
         requestKey: null, // 接口请求密匙
         parsonal: {} // 个人信息
     },
+    getters: {
+        purchaseList: (state) => (obj) => {
+            return wxRequest({
+                url: '/PurchaseController/orderList',
+                method: 'GET',
+                data: obj
+            }, true)
+        }
+    },
     mutations: {
         setUserInfo(state, userinfo) {
             state.userinfo = userinfo;
@@ -48,6 +57,23 @@ export default new Vuex.Store({
         },
         setRequestKey(context, key) {
             context.commit('setRequestKey', key)
+        }
+    },
+    modules: {
+        statement: {
+            state: {
+                statement: null
+            },
+            getters: {
+                filterStatemen: (state) => (id) => {
+                    return state.statement.filter(item => item.id == id); 
+                }
+            },
+            mutations: {
+                setStatement(state, data) {
+                    state.statement = data;
+                }
+            }
         }
     }
 })

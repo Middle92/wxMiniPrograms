@@ -1,29 +1,29 @@
 <template>
     <div class="container">
         <div class="title">
-            <h1>采购用于回收液晶广告</h1>
-            <p>2018-06-05  11:05丨 商机总收益<span>80.00</span>元</p>
+            <h1>{{data.product}}</h1>
+            <p>{{buyDeadline}}丨 商机总收益<span>{{data.totalIncome}}</span>元</p>
             <!-- <img src="/static/icon-1.png" alt=""> -->
         </div>
         <div class="content">
             <ul>
                 <li class="user-info">
-                    <img src="/static/test_header.jpg" alt="">
+                    <img :src="data.photo" alt="">
                     <div>
-                        <p class="user-name">何强</p>
-                        <p class="company">广州一呼百应网络技术股份有限公司</p>
+                        <p class="user-name">{{data.name}}</p>
+                        <p class="company">{{data.company}}</p>
                     </div>
                 </li>
                 <li class="product-info">
                     <div class="group">
                         <label for="">采购数量</label>
-                        <div class="group-content"><span>10</span>件</div>
+                        <div class="group-content"><span>{{data.number}}</span>{{data.unit}}</div>
                     </div>
 
                     <div class="group">
                         <label for="">价格</label>
                         <div class="group-content">
-                            <span>20.00</span>元
+                            <span>{{data.price}}</span>元
                             <img src="/static/icon-15.png"  mode="widthFix" alt="" style="width: 18px;"/>
                         </div>
                     </div>
@@ -41,11 +41,9 @@
                     <div class="group">
                         <label for="">补充说明</label>
                         <div class="group-content">
-                            <p>音响设备回收 仪器仪表回收 机房电瓶回收电脑设备</p>
+                            <p>{{data.explained}}</p>
                             <div class="images">
-                                <img mode="widthFix" src="/static/test-bg-1.png" alt="">
-                                <img mode="widthFix" src="/static/test-bg-2.png" alt="">
-                                <img mode="widthFix" src="/static/test-bg-3.png" alt="">
+                                <img v-for="(item, index) in data.imgList" :key="index" mode="widthFix" :src="item" alt="">
                             </div>
                         </div>
                     </div>
@@ -56,14 +54,19 @@
             <div class="group">
                 <label for=""></label>
                 <div class="group-content">
-                    阅读152    报价4
-                    <span>广东 广州</span>
+                    阅读{{data.browseCount}}    报价{{data.offerCount}}
+                    <span>{{data.companyAddress}}</span>
                 </div>
             </div>
-            <div class="over">~ 全部加载完毕 ~</div>
+            <div class="over"> ~ 全部加载完毕 ~ </div>
         </div>
         <div class="footer">
-            <ul>
+            <button v-if="type == 'offer'" class="primary" @click="offerFun">立即报价</button>
+            <ul v-else>
+                <li>
+                    <img src="/static/icon-7.png" mode="widthFix" alt="" style="width: 15px;">
+                    邀请报价
+                </li>
                 <li>
                     <img src="/static/icon-5.png" mode="widthFix" alt="" style="width: 15px;">
                     分享到朋友圈
@@ -78,9 +81,31 @@
 </template>
 
 <script>
+import wxRequrest from '@/utils/request';
+import utils from '@/utils/index';
+
 export default {
     data() {
-        return {}
+        return {
+            data: {},
+            type: null
+        }
+    },
+    computed: {
+        buyDeadline() {
+            return utils.formatTime(new Date(this.data.buyDeadline), '.')
+        }
+    },
+    onLoad(query) {
+        this.type = query.type;
+        wxRequrest({
+            url: '/PurchaseController/detail',
+            data: {
+                purchaseOrdersId: query.id
+            }
+        }, true).then(response => {
+            this.data = response.data;
+        })
     }
 }
 </script>
@@ -94,6 +119,26 @@ export default {
     width: 100%;
     box-sizing: border-box;
     background-color: #fff;
+}
+
+.footer {
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer ul li {
+    width: 33%;
+    box-sizing: border-box;
+    display: inline-block;
+    text-align: center;
+    font-size: 14px;
+    color: #3f8bf4;
+}
+
+.footer ul li:not(:last-child) {
+    border-right: 1px solid #e9e9e9
 }
 
 .title {
@@ -204,24 +249,6 @@ export default {
     top: 50%;
     margin-top: -10px;
     left: 10px;
-}
-.footer {
-    padding: 10px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
-.footer ul li {
-    width: 50%;
-    box-sizing: border-box;
-    display: inline-block;
-    text-align: center;
-    font-size: 16px;
-    color: #3f8bf4;
-}
-
-.footer ul li:first-child {
-    border-right: 1px solid #e9e9e9
 }
 
 .other {

@@ -7,21 +7,20 @@
         </ul>
         
         <div class="release-content">
-            <ul class="release" v-for="(item, index) in tabData" :key="index" v-show="tab[index].active">
-                <li class="release-item" v-for="(ite, inde) in item" :key="inde">
-                    <img src="/static/test-bg-1.png" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+            <ul class="release" v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
+                <li class="release-item" v-for="(ite, inde) in item.data" :key="inde">
+                    <img :src="ite.productImg" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                     <div class="release-default">
-                        <p class="release-title">{{ite.title}}</p>
+                        <p class="release-title">{{ite.product}}</p>
                         <div class="release-info">
-                            <p>规格：{{ite.spec}}</p>
+                            <p>规格：{{ite.unit}}</p>
                             <p>数量：{{ite.number}}</p>
                         </div>
                     </div>
                     <div class="release-btn">
-                        <span class="audit" v-if="index === 0">审核中</span>
-                        <span class="published" v-else-if="index === 1">已发布</span>
-                        <span class="not-through" v-else>审核未通过</span>
-                        <!-- <button class="primary" @click="statementDefault">申述</button> -->
+                        <span class="audit" v-if="ite.status === 0">审核中</span>
+                        <span class="published" v-else-if="ite.status === 2">已发布</span>
+                        <span class="not-through" v-else-if="ite.status === 1">审核未通过</span>
                     </div>
                 </li>
             </ul>
@@ -30,88 +29,28 @@
 </template>
 
 <script>
+import store from '@/stores';
 export default {
     data() {
         return {
             tab: [
                 {
                     title: '审核中',
-                    active: true
+                    active: true,
+                    pageNo: 1,
+                    status: 0,
+                    data: []
                 }, {
-                    title: '已发布'
+                    title: '已发布',
+                    pageNo: 1,
+                    status: 3,
+                    data: []
                 }, {
-                    title: '未通过'
+                    title: '未通过',
+                    pageNo: 1,
+                    status: 1,
+                    data: []
                 }
-            ],
-            tabData: [
-                // 审核中
-                [
-                    {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    },
-                ],
-                // 已发布
-                [
-                    {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    },
-                ],
-                // 未通过
-                [
-                    {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    }, {
-                        title: '采购LED灯带',
-                        spec: 'EVDF11',
-                        number: '5件'
-                    },
-                ]
             ]
         }
     },
@@ -120,13 +59,63 @@ export default {
             var index = e.target.dataset.index;
             this.tab = this.tab.map((item, inde) => {
                 item.active = false;
-                console.log(index, inde)
                 if(index === inde) {
                     item.active = true;
                 }
                 return item;
             })
         }
+    },
+    mounted() {
+        this.tab.map(item => {
+            store.getters
+                .purchaseList({
+                    pageNo: item.pageNo,
+                    status: item.status
+                })
+                .then(response => {
+                    item.data = response.data.list;
+                    if(response.data.list.length > 0) {
+                        item.pageNo++;
+                    }
+                });
+        })
+    },
+    onPullDownRefresh(e) {
+        this.tab.map(item => {
+            if(item.active) {
+                item.pageNo = 1;
+                store.getters
+                    .purchaseList({
+                        pageNo: item.pageNo,
+                        status: item.status
+                    })
+                    .then(response => {
+                        item.data = response.data.list;
+                        if(response.data.list.length > 0) {
+                            item.pageNo++;
+                        }
+                        wx.stopPullDownRefresh();
+                    });
+            }
+        })
+    },
+    onReachBottom() {
+        this.tab.map(item => {
+            if(item.active) {
+                store.getters
+                    .purchaseList({
+                        pageNo: item.pageNo,
+                        status: item.status
+                    })
+                    .then(response => {
+                        item.data = [...item.data, ...response.data.list];
+                        if(response.data.list.length > 0) {
+                            item.pageNo++;
+                        }
+                    });
+            }
+        });
     }
 }
 </script>
