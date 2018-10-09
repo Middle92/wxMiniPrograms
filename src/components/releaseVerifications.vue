@@ -12,14 +12,14 @@
             <div class="form-group">
                 <label for="">手机号码</label>
                 <div class="flex-1">
-                    <input type="text" v-model="mobile" placeholder="请输入11位手机号码">
+                    <input type="digit" v-model="mobile" placeholder="请输入11位手机号码">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="">验证码</label>
                 <div class="flex-1">
-                    <input type="text" v-model="codeValue" placeholder="请输入4位数验证码">
+                    <input type="digit" v-model="codeValue" placeholder="请输入4位数验证码">
                 </div>
                 <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
             </div>
@@ -67,7 +67,7 @@ export default {
           icon: 'none',
           title: '电话号码不正确'
         })
-      } else if(!self.name) {
+      } else if(!self.name || self.name.trim() == '') {
         wx.showToast({
           icon: 'none',
           title: '填写姓名'
@@ -88,7 +88,7 @@ export default {
             let timer;
             timer = setInterval(() => {
               this.btnText = this.btnTextTime -= 1;
-              if(this.btnTextTime <= 0) {
+              if(this.btnTextTime <= 0 || !this.visibility) {
                 clearInterval(timer)
                 this.btnText = '获取验证码';
                 this.btnTextTime = 60;
@@ -116,7 +116,7 @@ export default {
           }
         }, true)
           .then(response => {
-            console.log(response)
+            $emit('visibility', false);
             wx.navigateTo({
               url: "/pages/success/main"
             });
@@ -135,9 +135,11 @@ export default {
       }
     }
   },
-  onLoad(options) {
-    if(options.init) {
-      Object.assign(this.$data, this.$options.data())
+  watch: {
+    visibility(val, oldval) {
+      if(oldval) {
+        Object.assign(this.$data, this.$options.data());
+      }
     }
   }
 };

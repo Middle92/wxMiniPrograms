@@ -4,7 +4,7 @@
         <span class="title">
             发布成功
         </span>
-        <button class="primary">查看采购单详情并分享</button>
+        <button class="primary">查看采购单详情</button>
         <button class="default" @click="release">继续发布</button>
     </div>
 </template>
@@ -17,12 +17,12 @@ export default {
     methods: {
         release() {
             wx.navigateTo({
-                url: "/pages/purchaseDefault/main?init=true"
+                url: "/pages/purchaseDefault/main"
             });
         }
     },
     onUnload: function () {
-        wx.navigateTo({
+        wx.redirectTo({
             url: "/pages/home/main"
         });
     }

@@ -1,7 +1,11 @@
 <template>
     <div class="container">
         <div class="content">
-            <input type="text" v-model="value" :placeholder="'请输入'+navigationTitle">
+            <input type="digit" v-model="value" :placeholder="'请输入'+navigationTitle">
+            <!-- <div v-if="nagitationKey == 'mobile'" class="code">
+                <input type="digit" v-model="code" placeholder="请输入验证码">
+                <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
+            </div> -->
         </div>
         <div class='submit-btns'>
             <button class='primary' @click="editData">确定</button>
@@ -11,30 +15,91 @@
 
 <script>
 import store from '@/stores';
+import wxRequest from '@/utils/request';
+
 export default {
     data() {
         return {
             navigationTitle: null,
             nagitationKey: null,
-            value: null
+            value: null,
+            // 短信验证
+            code: null,
+            getCodeBtn: true,
+            btnText: '获取验证码',
+            btnTextTime: 60,
+            getCodeValue: null,
         };
     },
-    computed: {
-
-    },
     onLoad(options) {
+        Object.assign(this.$data, this.$options.data());
         let self = this;
         self.navigationTitle = options.name;
         self.nagitationKey = options.key;
         self.value = store.state.parsonal[self.nagitationKey];
         wx.setNavigationBarTitle({
             title: self.navigationTitle
-        })
+        });
     },
     methods: {
         editData() {
-            store.commit("editParsonal", { [this.nagitationKey]: this.value });
-            wx.navigateBack()
+            // if(!this.value || this.value.trim() == '') {
+            //     wx.showToast({
+            //         mask: true,
+            //         icon: 'none',
+            //         title: '内容不能为空',
+            //     })
+            //     return false;
+            // }
+            // if(this.nagitationKey == 'mobile') {
+            //     if(this.code && this.code === this.getCodeValue) {
+            //         store.commit("editParsonal", { [this.nagitationKey]: this.value });
+            //     } else {
+            //         wx.showToast({
+            //             mask: true,
+            //             icon: 'none',
+            //             title: '验证码错误',
+            //         })
+            //         return false;
+            //     }
+            // } else {
+                store.commit("editParsonal", { [this.nagitationKey]: this.value });
+            // }
+        },
+        getCode() {
+            let self = this;
+            if(!(/^1(3|4|5|7|8)\d{9}$/.test(self.value))){ 
+                wx.showToast({
+                icon: 'none',
+                title: '电话号码不正确'
+                })
+            } else {
+                wxRequest({
+                url: '/buyerController/getAuthCode',
+                data: {
+                    mobile: self.value
+                }
+                }, true)
+                .then((response) => {
+                    // 验证码按钮disabled
+                    this.getCodeBtn = false;
+                    this.btnText = this.btnTextTime;
+                    this.getCodeValue = response.data;
+
+                    let timer;
+                    timer = setInterval(() => {
+                        if(this.btnTextTime <= 0 || typeof this.btnText == 'string') {
+                            clearInterval(timer)
+                            this.btnText = '获取验证码';
+                            this.btnTextTime = 60;
+                            this.getCodeBtn = true;
+                            this.getCodeValue = null;
+                            return false;
+                        }
+                        this.btnText = this.btnTextTime -= 1;
+                    }, 1000)
+                })
+            }
         }
     }
 }
@@ -60,6 +125,24 @@ export default {
   padding: 10px 20px;
   width: 100%;
   box-sizing: border-box;
+}
+/* code */
+.code {
+    padding: 0rem .2rem;
+    margin-top: 15px;
+    display: flex;
+}
+
+.code > input {
+    flex: 1
+}
+
+.code > button{
+    font-size: 12px;
+    height: 30px;
+    line-height: 30px;
+    color: #1a81ff;
+    border: 1px solid #1a81ff;
 }
 </style>
 

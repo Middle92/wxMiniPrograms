@@ -67,6 +67,7 @@ async function setUserInfo(url) {
       });
     })
     .then(() => {
+      // 获取用户信息
       wxRequest({
         url: "/buyerController/findInfo"
       }, true).then(response => {

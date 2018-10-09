@@ -189,7 +189,7 @@ export default {
     },
     release() {
       wx.navigateTo({
-        url: "/pages/purchaseDefault/main?init=true"
+        url: "/pages/purchaseDefault/main"
       });
     },
     toDefault(e, type) {

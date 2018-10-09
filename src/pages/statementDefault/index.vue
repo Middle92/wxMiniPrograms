@@ -13,9 +13,9 @@
 
         <div class="statement-reason">
             <p>投诉理由：<span>{{Data.complainContent}}</span></p>
-            <textarea></textarea>
+            <textarea v-model="value"></textarea>
             <div class="statement-default-btn">
-                <button class="primary">立即申述</button>
+                <button class="primary" @click="statement">立即申述</button>
             </div>
         </div>
     </div>
@@ -23,16 +23,42 @@
 
 <script>
 import store from '@/stores';
+import wxRequest from "@/utils/request";
 
 export default {
     data() {
         return {
-            Data: {}
+            Data: {},
+            value: null,
+            id: null
         }
     },
     onLoad(query) {
-        console.log(this.Data = store.getters.filterStatemen(query.id)[0]);
-
+        this.id = query.id;
+        this.Data = store.getters.filterStatemen(query.id)[0];
+    },
+    methods: {
+        statement() {
+            wxRequest({
+                url: "/feedbackController/appeal",
+                method: 'POST',
+                data: {
+                    id: this.id,
+                    appealContent: this.value
+                }
+            }).then((response)=>{
+                wx.showToast({
+                    mask: true,
+                    title: response.message,
+                })
+            }).catch((response) => {
+                wx.showToast({
+                    mask: true,
+                    icon: 'none',
+                    title: response.message,
+                })
+            })
+        }
     }
 }
 </script>

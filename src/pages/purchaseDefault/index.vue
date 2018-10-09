@@ -15,14 +15,15 @@
 
         <div class="form-group">
             <label for="">单位</label>
-            <div class="flex-1">
+            <input class="flex-1" v-model="unitValue" placeholder="请输入单位">
+            <!-- <div class="flex-1">
                 <picker :value="unitValue" :range="unit" @change="bindPickerChange">
                     <div class="picker" :class="{placeholder: !unitValue}">
                     {{unitValue ? unitValue : '请选择'}}
                     </div>
                     <div v-if="!unitValue" class="holder-right">></div>
                 </picker>
-            </div>
+            </div> -->
         </div>
 
         <div class="form-group">
@@ -116,10 +117,10 @@
 <script>
 const recorderManager = wx.getRecorderManager();
 const innerAudioContext = wx.createInnerAudioContext();
-import store from "../../stores";
-import releasePopComponent from "../../components/releasePop";
-import releaseVerificationComponent from "../../components/releaseVerifications";
+import store from "@/stores";
 import wxRequest from "@/utils/request";
+import releasePopComponent from "@/components/releasePop";
+import releaseVerificationComponent from "@/components/releaseVerifications";
 
 export default {
   data() {
@@ -133,7 +134,7 @@ export default {
       // 产品数量
       productNumber: null,
       // 产品单位
-      unit: ["px", "rpx", "rem", "..."],
+      // unit: ["px", "rpx", "rem", "..."],
       // 产品单位值
       unitValue: null,
       // 截止时间
@@ -210,10 +211,10 @@ export default {
       }
     },
     // 单位change事件
-    bindPickerChange(e) {
-      let index = e.mp.detail.value;
-      this.unitValue = this.unit[index];
-    },
+    // bindPickerChange(e) {
+    //   let index = e.mp.detail.value;
+    //   this.unitValue = this.unit[index];
+    // },
     // 截止事件change事件
     bindDateChange(e) {
       this.deadline = e.mp.detail.value;
@@ -284,25 +285,24 @@ export default {
         }
       }
 
-      wxRequest({
-        url: "/PurchaseController/publish",
-        method: 'POST',
-        data: obj
-      }, true).then((response) => {
-        console.log(response);
-        this.VerificationPop = true;
-      })
-      // let { mobile } = this.parsonalData;
+      
+      let { mobile } = this.parsonalData;
 
-      // if (mobile) {
+      if (mobile) {
         // 已填写联系方式
-        // wx.navigateTo({
-          // url: "/pages/success/main"
-        // });
-      // } else {
+        wxRequest({
+          url: "/PurchaseController/publish",
+          method: 'POST',
+          data: obj
+        }, true).then((response) => {
+          wx.navigateTo({
+            url: "/pages/success/main"
+          });
+        })
+      } else {
         // 没有填写联系方式
-        
-      // }
+        this.VerificationPop = true;
+      }
     }
   },
   mounted(options) {
@@ -383,7 +383,7 @@ export default {
   },
   onLoad(options) {
     // console.log('page index onLoad', options, this);
-    if(options.init) {
+    if(!options.init) {
       Object.assign(this.$data, this.$options.data())
     }
   },

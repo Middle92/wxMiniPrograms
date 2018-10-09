@@ -25,6 +25,8 @@ export default new Vuex.Store({
             state.userinfo = userinfo;
         },
         setParsonal(state, obj) {
+            !obj.photo && (obj.photo = state.userinfo.avatarUrl);
+            !obj.nickname && (obj.nickname = state.userinfo.nickName);
             state.parsonal = Object.assign({}, state.parsonal, obj);
         },
         setCode(state, code) {
@@ -40,6 +42,20 @@ export default new Vuex.Store({
                     method: 'POST',
                     data: { [key]: obj[key] }
                 }, true).then((response) => {
+                    if(response.code == '200') {
+                        wx.showToast({
+                            mask: true,
+                            title: '修改成功',
+                            success: function() {
+                                setTimeout(() => {
+                                    if(key == 'photo') {
+                                        return false;
+                                    }
+                                    wx.navigateBack()
+                                }, 1500)
+                            }
+                        })
+                    }
                     state.parsonal = Object.assign({}, state.parsonal, obj);
                 })
             }
