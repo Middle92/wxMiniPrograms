@@ -46,16 +46,20 @@ async function setUserInfo(url) {
     .then(() => {
       // 请求授权注册登录
       return new Promise((resolve, rejects) => {
+        let inviterId = wx.getLaunchOptionsSync().query.inviterId;
+        let obj = {
+          code: store.state.code,
+          avatarUrl: store.state.userinfo.avatarUrl,
+          nickName: store.state.userinfo.nickName,
+        }
+        inviterId && (obj.inviterId = inviterId);
         wxRequest({
           url: "/buyerController/authorizeRegister",
-          data: {
-            code: store.state.code,
-            avatarUrl: store.state.userinfo.avatarUrl,
-            nickName: store.state.userinfo.nickName
-          }
+          data: obj
         }).then(response => {
           // 获取登录获得的接口请求凭据
-          store.dispatch("setRequestKey", response.data);
+          store.dispatch("setRequestKey", response.data.miniappToken);
+          store.dispatch("setBuyerId", response.data.buyerId);
           resolve();
         }).catch(e => {
           wx.showToast({
@@ -97,7 +101,7 @@ async function setUserInfo(url) {
 export default {
   data() {
     return {
-      imgUrls: ["/static/ad01.png", "/static/ad02.png"],
+      imgUrls: null,
       indicatorDots: true,
       autoplay: true,
       interval: 4000,
@@ -133,6 +137,15 @@ export default {
         console.log("请升级微信");
       }
     }
+  },
+  mounted() {
+    wxRequest({
+      url: '/advertisingController/findAll'
+    }).then((response) => {
+      this.imgUrls = response.data.map((item) => {
+        return store.state.baseUrl + item.imgUrl
+      })
+    })
   }
 };
 </script>

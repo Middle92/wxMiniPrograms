@@ -2,10 +2,10 @@
     <div class="container">
         <div class="content">
             <input type="digit" v-model="value" :placeholder="'请输入'+navigationTitle">
-            <!-- <div v-if="nagitationKey == 'mobile'" class="code">
+            <div v-if="nagitationKey == 'mobile'" class="code">
                 <input type="digit" v-model="code" placeholder="请输入验证码">
                 <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
-            </div> -->
+            </div>
         </div>
         <div class='submit-btns'>
             <button class='primary' @click="editData">确定</button>
@@ -43,28 +43,28 @@ export default {
     },
     methods: {
         editData() {
-            // if(!this.value || this.value.trim() == '') {
-            //     wx.showToast({
-            //         mask: true,
-            //         icon: 'none',
-            //         title: '内容不能为空',
-            //     })
-            //     return false;
-            // }
-            // if(this.nagitationKey == 'mobile') {
-            //     if(this.code && this.code === this.getCodeValue) {
-            //         store.commit("editParsonal", { [this.nagitationKey]: this.value });
-            //     } else {
-            //         wx.showToast({
-            //             mask: true,
-            //             icon: 'none',
-            //             title: '验证码错误',
-            //         })
-            //         return false;
-            //     }
-            // } else {
+            if(!this.value || this.value.trim() == '') {
+                wx.showToast({
+                    mask: true,
+                    icon: 'none',
+                    title: '内容不能为空',
+                })
+                return false;
+            }
+            if(this.nagitationKey == 'mobile') {
+                if(this.code && this.code === this.getCodeValue) {
+                    store.commit("editParsonal", { [this.nagitationKey]: this.value });
+                } else {
+                    wx.showToast({
+                        mask: true,
+                        icon: 'none',
+                        title: '验证码错误',
+                    })
+                    return false;
+                }
+            } else {
                 store.commit("editParsonal", { [this.nagitationKey]: this.value });
-            // }
+            }
         },
         getCode() {
             let self = this;

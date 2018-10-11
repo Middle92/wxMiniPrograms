@@ -8,8 +8,8 @@
         
         <div class="release-content">
             <ul class="release" v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
-                <li class="release-item" v-for="(ite, inde) in item.data" :key="inde">
-                    <img :src="ite.productImg" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+                <li class="release-item" v-for="(ite, inde) in item.data" :key="inde" :data-id="ite.id" :data-status="item.status" @click="itemDefault">
+                    <img :src="baseUrl + ite.productImg" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                     <div class="release-default">
                         <p class="release-title">{{ite.product}}</p>
                         <div class="release-info">
@@ -43,7 +43,7 @@ export default {
                 }, {
                     title: '已发布',
                     pageNo: 1,
-                    status: 3,
+                    status: 2,
                     data: []
                 }, {
                     title: '未通过',
@@ -64,6 +64,18 @@ export default {
                 }
                 return item;
             })
+        },
+        itemDefault(e) {
+            let id = e.currentTarget.dataset.id
+            let status = e.currentTarget.dataset.status
+            wx.navigateTo({
+                url: `/pages/purchaseOrderDefault/main?id=${id}&status=${status}`
+            })
+        }
+    },
+    computed: {
+        baseUrl() {
+            return store.state.baseUrl;
         }
     },
     mounted() {
@@ -116,6 +128,9 @@ export default {
                     });
             }
         });
+    },
+    onLoad(options) {
+        Object.assign(this.$data, this.$options.data());
     }
 }
 </script>

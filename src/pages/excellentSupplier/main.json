@@ -1,3 +1,4 @@
 {
-    "navigationBarTitleText": "优秀供应商"
+    "navigationBarTitleText": "优秀供应商",
+    "enablePullDownRefresh": true
 }

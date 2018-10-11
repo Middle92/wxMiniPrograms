@@ -13,7 +13,7 @@
                 <div class='all-income'>
                     <div>
                         <div>累计收益(元)</div>
-                        <div>{{cumulativeIncome}}</div>
+                        <div>{{totalIncome}}</div>
                     </div>
                     <div>
                         <div>余额(元)</div>
@@ -21,21 +21,21 @@
                     </div>
                     <div>
                         <div>提现中</div>
-                        <div>{{withdrawing}}</div>
+                        <div>{{withdraw}}</div>
                     </div>
                 </div>
             </div>
             <!-- 收益详细 -->
             <div class='income-detail'>
-                <div class='item' v-for="(item, index) in incomeList" :key="index">
+                <div class='item' v-for="(item, index) in incomeList.list" :key="index">
                     <div class='item-left'>
-                        <div class='title'>{{item.title}}</div>
-                        <div>{{item.date}}</div>
+                        <div class='title'>{{item.subject}}</div>
+                        <div>{{item.addTime}}</div>
                     </div>
                     <div 
                         class='item-right' 
-                        :class="(item.type == 1 && 'profit') || (item.type == 2 && 'loss') || (item.type == 3 && 'out-account')">
-                            {{item.amount > 0 ? '+' + item.amount : item.amount}}元
+                        :class="(item.type == 1 && 'profit') || (item.type == 0 && 'loss') || (item.type == 3 && 'out-account')">
+                            {{item.money > 0 ? '+' + item.money : item.money}}元
                     </div>
                 </div>
             </div>
@@ -54,71 +54,96 @@
 
 <script>
 import utils from "@/utils/index";
+import stores from "@/stores/index";
+import wxRequest from "@/utils/request";
 
 export default {
   data() {
     return {
-      todayIncome: utils.fixed(10.0, 2),
-      cumulativeIncome: utils.fixed(200.0, 2),
-      balance: utils.fixed(160.0, 2),
-      withdrawing: utils.fixed(10.0, 2),
-      incomeList: [
-        {
-          title: "广州市凯明有限公司在线询价",
-          date: "2018-06-05 11:05",
-          type: 1, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(10.0, 2)
-        },
-        {
-          title: "提现申请-已到账",
-          date: "2018-06-05 11:05",
-          type: 2, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        },
-        {
-          title: "提现申请-未到账",
-          date: "2018-06-05 11:05",
-          type: 3, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        },
-        {
-          title: "广州市凯明有限公司在线询价",
-          date: "2018-06-05 11:05",
-          type: 1, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(10.0, 2)
-        },
-        {
-          title: "提现申请-已到账",
-          date: "2018-06-05 11:05",
-          type: 2, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        },
-        {
-          title: "提现申请-未到账",
-          date: "2018-06-05 11:05",
-          type: 3, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        },
-        {
-          title: "广州市凯明有限公司在线询价",
-          date: "2018-06-05 11:05",
-          type: 1, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(10.0, 2)
-        },
-        {
-          title: "提现申请-已到账",
-          date: "2018-06-05 11:05",
-          type: 2, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        },
-        {
-          title: "提现申请-未到账",
-          date: "2018-06-05 11:05",
-          type: 3, // 1:收益 2:已到账 3:未到账
-          amount: utils.fixed(-10.0, 2)
-        }
-      ]
+      // todayIncome: utils.fixed(10.0, 2),
+      // totalIncome: utils.fixed(200.0, 2),
+      // balance: utils.fixed(160.0, 2),
+      // withdraw: utils.fixed(10.0, 2),
+      // incomeList: [
+      //   {
+      //     title: "广州市凯明有限公司在线询价",
+      //     date: "2018-06-05 11:05",
+      //     type: 1, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-已到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 2, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-未到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 3, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   },
+      //   {
+      //     title: "广州市凯明有限公司在线询价",
+      //     date: "2018-06-05 11:05",
+      //     type: 1, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-已到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 2, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-未到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 3, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   },
+      //   {
+      //     title: "广州市凯明有限公司在线询价",
+      //     date: "2018-06-05 11:05",
+      //     type: 1, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-已到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 2, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   },
+      //   {
+      //     title: "提现申请-未到账",
+      //     date: "2018-06-05 11:05",
+      //     type: 3, // 1:收益 2:已到账 3:未到账
+      //     amount: utils.fixed(-10.0, 2)
+      //   }
+      // ],
+      incomeList: {
+        pageNo: 1,
+        pageSize: 10,
+        list: []
+      }
     };
+  },
+  computed: {
+    // 今日收益
+    todayIncome() {
+      return utils.fixed(stores.state.parsonal.todayIncome, 2);
+    },
+    // 累计收益
+    totalIncome() {
+      return utils.fixed(stores.state.parsonal.totalIncome, 2);
+    },
+    // 余额
+    balance() {
+      return utils.fixed(stores.state.parsonal.balance, 2);
+    },
+    // 提现中
+    withdraw() {
+      return utils.fixed(stores.state.parsonal.withdraw, 2);
+    },
   },
   methods: {
     takecash() {
@@ -126,6 +151,17 @@ export default {
         url: "/pages/takeCash/main"
       });
     }
+  },
+  mounted() {
+    wxRequest({
+      url: '/journalAccountController/list',
+      data: {
+        pageNo: this.incomeList.pageNo,
+        pageSize: this.incomeList.pageSize
+      }
+    }, true).then(response => {
+      this.incomeList.list = response.data.list;
+    })
   }
 };
 </script>

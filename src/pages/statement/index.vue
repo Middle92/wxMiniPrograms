@@ -30,7 +30,6 @@ export default {
     },
     methods: {
         statementDefault(e) {
-            console.log()
             wx.navigateTo({
                 url: `/pages/statementDefault/main?id=${e.currentTarget.dataset.id}`,
             });

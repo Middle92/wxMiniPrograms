@@ -4,13 +4,13 @@
         <div class="money">
             <div class="money-input">
                 <!-- ￥  -->
-                <input type="number">
+                <input type="number" v-model="value">
             </div>
         </div>
         <p class="balance">当前余额￥{{balance}}</p>
 
         <div class="btns">
-            <button class="primary">立即提现</button>
+            <button class="primary" @click="takeCash">立即提现</button>
         </div>
 
         <div class="tips">
@@ -24,14 +24,48 @@
 </template>
 
 <script>
+import stores from '@/stores';
+import wxRequest from '@/utils/request';
+
 export default {
     data() {
         return {
-            balance: 120.00,
+            value: null, 
             tips: [
                 '1.提现申请将在3小时候内到账；如遇高峰期，可能延迟到账烦请耐心等待；',
                 '2.提现到账查询：微信→我→钱包→零钱→零钱明细，如有名称为“企业付款：百采号提现成功”的数据，即提现到账成功！'
             ]
+        }
+    },
+    computed: {
+        balance() {
+            return stores.state.parsonal.balance
+        }
+    },
+    methods: {
+        takeCash() {
+            if(this.value && this.value.trim() != '') {
+                wxRequest({
+                    url: '/journalAccountController/withdraw',
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/x-www-form-urlencoded'
+                    },
+                    data: {
+                        money: this.value
+                    }
+                }, true).then(response => {
+                    wx.showToast({
+                        title: data.message,
+                    })
+                }).catch(response => {
+                    let data = response.data;
+                    wx.showToast({
+                        icon: 'none',
+                        title: data.message,
+                    })
+                })
+            }
         }
     }
 }

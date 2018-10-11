@@ -4,14 +4,14 @@
             <h1>我们会将供应商信息发到你的邮箱</h1>
             <div class="export-content">
                 <label for="">邮箱</label>
-                <input type="text" placeholder="请输入正确邮箱地址">
+                <input type="text" v-model="mail" placeholder="请输入正确邮箱地址">
             </div>
             <div class="export-btns">
                 <div class="btn">
-                    <button @click="$emit('visibility', false)">取消</button>
+                    <button @click="$emit('visibility', {status: false, type: 1})">取消</button>
                 </div>
                 <div class="btn">
-                    <button class="primary" @click="$emit('visibility', false)">确定</button>
+                    <button class="primary" @click="exportFun">确定</button>
                 </div>
             </div>
         </div>
@@ -27,7 +27,29 @@ export default {
         }
     },
     data() {
-        return {}
+        return {
+            mail: null
+        }
+    },
+    watch: {
+        visibility(val, oldval) {
+            if(oldval) {
+                this.mail = null;
+            }
+        }
+    },
+    methods: {
+        exportFun() {
+            if(!(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(this.mail))) {
+                wx.showToast({
+                    mask: true,
+                    icon: 'none',
+                    title: '请填写正确邮箱'
+                })
+                return false;
+            }
+            this.$emit('visibility', {status: false, type: 2, mail: this.mail})
+        }
     }
 }
 </script>

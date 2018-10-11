@@ -22,8 +22,8 @@
             <div class="tab-content">
                 <ul v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
                     <li v-for="(ite, inde) in item.data" :key="inde">
-                      <div class="product" :data-id="ite.id" @click="toDefault">
-                          <img :src='ite.productImg'/>
+                      <div class="product" :data-id="ite.id" :data-status="ite.status" @click="toDefault">
+                          <img :src='baseUrl + ite.productImg'/>
                           <div class='info'>
                               <p class='title'>{{ite.product}}</p>
                               <div class='detail-p'>
@@ -38,7 +38,12 @@
                           </div>
                       </div>
                       <ul class="share"><!-- v-if="ite.read" -->
-                          <li v-for="(it, ind) in share" :key="ind" :data-id="ite.id" @click="it.callback">
+                          <li 
+                            v-for="(it, ind) in share" 
+                            :key="ind" 
+                            :data-id="ite.id" 
+                            @click="it.callback"
+                            v-if="!(it.title == '邀请报价' && item.title == '已结束')">
                               <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
                               {{it.title}}
                           </li>
@@ -59,7 +64,7 @@
 <script>
 import store from "@/stores";
 import utils from "@/utils/index";
-import wxRequest from "../../utils/request";
+import wxRequest from "@/utils/request";
 
 var query = wx.createSelectorQuery();
 export default {
@@ -134,18 +139,20 @@ export default {
         {
           title: "分享到朋友圈",
           icon: "/static/icon-5.png",
-          callback: () => {
+          callback: (e) => {
+            let id = e.currentTarget.dataset.id;
             wx.navigateTo({
-              url: "/pages/share/main"
+              url: "/pages/share/main?id=" + id
             });
           }
         },
         {
           title: "查看供应商",
           icon: "/static/icon-6.png",
-          callback() {
+          callback(e) {
+            let id = e.currentTarget.dataset.id;
             wx.navigateTo({
-              url: "/pages/excellentSupplier/main"
+              url: "/pages/excellentSupplier/main?purchaseOrdersId=" + id
             });
           }
         }
@@ -158,6 +165,9 @@ export default {
   computed: {
     userinfo() {
       return store.state.userinfo;
+    },
+    baseUrl() {
+      return store.state.baseUrl;
     }
   },
   methods: {
@@ -192,10 +202,11 @@ export default {
         url: "/pages/purchaseDefault/main"
       });
     },
-    toDefault(e, type) {
+    toDefault(e, type='') {
       let id = e.currentTarget.dataset.id
+      let status = e.currentTarget.dataset.status
       wx.navigateTo({
-        url: `/pages/purchaseOrderDefault/main?${type ? 'type=offer&' : ''}id=${id}`
+        url: `/pages/purchaseOrderDefault/main?type=${type}&id=${id}&status=${status}`
       });
     }
   },
@@ -218,6 +229,9 @@ export default {
           status: item.status
         })
         .then(response => {
+          if(response.data.list.length > 0) {
+            item.pageNo++;
+          }
           item.data = response.data.list;
         });
     });
@@ -246,18 +260,23 @@ export default {
   },
   onReachBottom: function() {
     this.tab.map(item => {
-      store.getters
-        .purchaseList({
-          pageNo: item.pageNo,
-          status: item.status
-        })
-        .then(response => {
-          item.data = [...item.data, ...response.data.list];
-          if(response.data.list.length > 0) {
-            item.pageNo++;
-          }
-        });
+      if(item.active) {
+        store.getters
+          .purchaseList({
+            pageNo: item.pageNo,
+            status: item.status
+          })
+          .then(response => {
+            item.data = [...item.data, ...response.data.list];
+            if(response.data.list.length > 0) {
+              item.pageNo++;
+            }
+          });
+      }
     });
+  },
+  onLoad(options) {
+    Object.assign(this.$data, this.$options.data());
   }
 };
 </script>
@@ -391,29 +410,23 @@ image {
 .share {
   border-top: 0.01rem solid #e9e9e9;
   padding: 10px 0;
+  display: flex;
 }
 
 .share li {
   display: inline-block;
-  width: 33.33%;
   font-size: 12px;
   height: 23px;
   line-height: 23px;
   box-sizing: border-box;
   text-align: center;
   color: #3f8bf4;
+  flex: 1;
 }
 
 .share li:not(:last-child) {
   border-right: 1px solid #e9e9e9;
 }
-
-/* .share li img {
-  width: 12px;
-  height: 0.3rem;
-  margin-top: -3px;
-  vertical-align: middle;
-} */
 
 /* icon */
 .plusIcon,

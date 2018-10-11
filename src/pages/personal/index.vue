@@ -6,7 +6,7 @@
                 <p v-if="parsonalData[item.key] && item.key != 'photo'">
                   {{parsonalData[item.key]}}
                 </p>
-                <img v-else-if="parsonalData[item.key] && item.key == 'photo'" :src="parsonalData[item.key]" alt="">
+                <img v-else-if="parsonalData[item.key] && item.key == 'photo'" :src="baseUrl + parsonalData[item.key]" alt="">
                 <p v-else>{{item.placeholder}}</p>
             </div>
         </div>
@@ -92,10 +92,10 @@ export default {
         },
         {
           title: "品牌",
-          key: 'trademark',
+          key: "trademark",
           placeholder: "未填写 >",
           clickType: this.editType1
-        },
+        }
         // {
         //   title: "新手引导",
         //   placeholder: ">",
@@ -108,11 +108,13 @@ export default {
   computed: {
     parsonalData() {
       return store.state.parsonal;
+    },
+    baseUrl() {
+      return store.state.baseUrl;
     }
   },
   watch: {
-    parsonalData(val, oldvalue){
-    }
+    parsonalData(val, oldvalue) {}
   },
   methods: {
     // 编辑
@@ -123,7 +125,7 @@ export default {
       let name = filterData[0].title;
       let key = filterData[0].key;
       wx.navigateTo({
-        url: "/pages/editparsonal/main?name=" + name + "&key=" + key,
+        url: "/pages/editparsonal/main?name=" + name + "&key=" + key
       });
     },
     // 选择头像
@@ -133,20 +135,33 @@ export default {
         count: 1,
         success(res) {
           let tempFilePaths = res.tempFilePaths[0];
-          store.commit("editParsonal", { photo: tempFilePaths });
+          // store.commit("editParsonal", { photo: tempFilePaths });
+          wx.uploadFile({
+            url: store.state.baseUrl + "/buyer/fileController/upload", //仅为示例，非真实的接口地址
+            filePath: tempFilePaths,
+            name: "file",
+            header: { buyer_token: store.state.requestKey },
+            formData: {
+              resourceType: "image"
+            },
+            success(res) {
+              const data = JSON.parse(res.data)
+              store.commit("editParsonal", { photo: data.data });
+            }
+          });
         }
       });
     },
     // 申述
     statement() {
       wx.navigateTo({
-        url: "/pages/statement/main",
+        url: "/pages/statement/main"
       });
     },
     // 我的发布
     release() {
       wx.navigateTo({
-        url: "/pages/release/main",
+        url: "/pages/release/main"
       });
     }
   }
@@ -185,7 +200,7 @@ export default {
   color: #cccccc;
   line-height: 0.8rem;
   font-size: 0.3rem;
-  align-items:center;
+  align-items: center;
 }
 
 .input > .title {
@@ -194,8 +209,8 @@ export default {
 }
 
 .input > image {
-  width: .8rem;
-  height: .8rem;
+  width: 0.8rem;
+  height: 0.8rem;
   border-radius: 50%;
 }
 

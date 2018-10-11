@@ -4,7 +4,7 @@
         <div class="ad-image">
             <img mode="widthFix" v-for="(item, index) in adimages" :key="index" :src="item" alt="">
             <div class="ad-button">
-                <button>立即邀请同行</button>
+                <button open-type="share">立即邀请同行</button>
             </div>
         </div>
         <ul class="bottomBtn">
@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import stores from "@/stores/index";
+
 export default {
     name: 'recommend',
     data() {
@@ -34,6 +36,12 @@ export default {
                     })
                 }}
             ]
+        }
+    },
+    onShareAppMessage() {
+        return {
+            title: '推荐有奖',
+            path: '/pages/index/main?inviterId=' + stores.state.buyerId,
         }
     }
 }

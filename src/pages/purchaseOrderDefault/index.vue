@@ -3,12 +3,13 @@
         <div class="title">
             <h1>{{data.product}}</h1>
             <p>{{buyDeadline}}丨 商机总收益<span>{{data.totalIncome}}</span>元</p>
-            <!-- <img src="/static/icon-1.png" alt=""> -->
+            <img class="status" v-if="status == 3" src="/static/icon-13.png" mode="widthFix" style="width:50px;" alt="">
+            <!-- <span class="status">{{statusText}}</span> -->
         </div>
         <div class="content">
             <ul>
                 <li class="user-info">
-                    <img :src="data.photo" alt="">
+                    <img :src="baseUrl + data.photo" alt="">
                     <div>
                         <p class="user-name">{{data.name}}</p>
                         <p class="company">{{data.company}}</p>
@@ -31,8 +32,9 @@
                     <div class="group">
                         <label for="">语音描述</label>
                         <div class="group-content">
-                            <div class="voice-description">
-                                <img src="/static/icon-14.png" mode="widthFix" alt="" style="width: 15px;">
+                            <div class="voice-description" @click="playVoice">
+                                <img src="/static/icon-14.png" :class="{voice: voice}" mode="widthFix" alt="" style="width: 15px;">
+                                <span>{{data.duration/1000}}</span>
                             </div>
                         </div>
                     </div>
@@ -43,7 +45,11 @@
                         <div class="group-content">
                             <p>{{data.explained}}</p>
                             <div class="images">
-                                <img v-for="(item, index) in data.imgList" :key="index" mode="widthFix" :src="item" alt="">
+                                <div class="image-item" v-for="(item, index) in data.imgList" :key="index">
+                                    <div class="imgage-flex">
+                                        <img mode="widthFix" :src="baseUrl + item" alt="">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -61,19 +67,15 @@
             <div class="over"> ~ 全部加载完毕 ~ </div>
         </div>
         <div class="footer">
-            <button v-if="type == 'offer'" class="primary" @click="offerFun">立即报价</button>
-            <ul v-else>
-                <li>
-                    <img src="/static/icon-7.png" mode="widthFix" alt="" style="width: 15px;">
-                    邀请报价
-                </li>
-                <li>
-                    <img src="/static/icon-5.png" mode="widthFix" alt="" style="width: 15px;">
-                    分享到朋友圈
-                </li>
-                <li>
-                    <img src="/static/icon-6.png" mode="widthFix" alt="" style="width: 15px;">
-                    查看供应商
+            <button v-if="type == 'offer'" class="primary" @click="toMiniProgram">立即报价</button>
+            <ul v-else-if="(status == 2 || status == 3) && type != 'offer'">
+                <li 
+                    v-for="(item, index) in share" 
+                    :key="index" 
+                    @click="item.callback"
+                    v-if="!(item.title == '邀请报价' && status == 3)">
+                    <img :src="item.icon" mode="widthFix" alt="" style="width: 15px;">
+                    {{item.title}}
                 </li>
             </ul>
         </div>
@@ -81,23 +83,98 @@
 </template>
 
 <script>
+const innerAudioContext = wx.createInnerAudioContext();
 import wxRequrest from '@/utils/request';
 import utils from '@/utils/index';
-
+import store from '@/stores';
 export default {
     data() {
         return {
             data: {},
-            type: null
+            type: null,
+            status: null,
+            id: null,
+            share: [
+                {
+                    title: "邀请报价",
+                    icon: "/static/icon-7.png",
+                    callback: (e) => {
+                        this.type = 'offer';
+                    }
+                },
+                {
+                    title: "分享到朋友圈",
+                    icon: "/static/icon-5.png",
+                    callback: () => {
+                        wx.navigateTo({
+                            url: "/pages/share/main?id=" + this.id
+                        });
+                    }
+                },
+                {
+                    title: "查看供应商",
+                    icon: "/static/icon-6.png",
+                    callback() {
+                        wx.navigateTo({
+                            url: "/pages/excellentSupplier/main"
+                        });
+                    }
+                }
+            ],
+            voice: false
         }
     },
     computed: {
         buyDeadline() {
             return utils.formatTime(new Date(this.data.buyDeadline), '.')
+        },
+        statusText() {
+            if(this.status == 0) {
+                return '审核中';
+            } else if(this.status == 1) {
+                return '未通过';
+            } else if(this.status == 2) {
+                return '采购中';
+            } else if(this.status == 3) {
+                return '已结束';
+            }
+        },
+        baseUrl() {
+            return store.state.baseUrl;
         }
+    },
+    methods: {
+        playVoice() {
+            innerAudioContext.src = this.data.audioFile;
+            innerAudioContext.play();
+        },
+        toMiniProgram() {
+            wx.navigateToMiniProgram({
+                appId: 'wxbd33d7484b389dac',
+                success() {
+                    console.log('success')
+                },
+                fail() {
+                    console.log('fail')
+                }
+            })
+        }
+    },
+    mounted(options) {
+        innerAudioContext.onPlay(() => {
+            console.log('开始播放');
+            this.voice = true;
+        })
+
+        innerAudioContext.onEnded(() => {
+            console.log('音频自然播放至结束的事件')
+            this.voice = false;
+        })
     },
     onLoad(query) {
         this.type = query.type;
+        this.status = query.status;
+        this.id = query.id;
         wxRequrest({
             url: '/PurchaseController/detail',
             data: {
@@ -108,6 +185,8 @@ export default {
         })
     }
 }
+
+
 </script>
 
 <style scoped>
@@ -128,8 +207,13 @@ export default {
     width: 100%;
 }
 
+.footer ul {
+    display: flex;
+}
+
 .footer ul li {
-    width: 33%;
+    /* width: 33%; */
+    flex: 1;
     box-sizing: border-box;
     display: inline-block;
     text-align: center;
@@ -144,6 +228,7 @@ export default {
 .title {
     margin-bottom: 10px;
     padding: 10px 20px;
+    position: relative;
 }
 
 .title > h1 {
@@ -216,22 +301,39 @@ export default {
     margin: 10px 0;
 }
 
-.group-content .images > img {
+.group-content .images .image-item {
     width: 30%;
     margin-right: 3%;
     margin-bottom: 5px;
+    height:100px;
+    overflow:hidden;
+    display: inline-block;
+}
+
+.group-content .images .image-item img {
+    width: 100%;
+}
+
+.imgage-flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .voice-description {
     background-color: #2ac94f;
     height: 30px;
-    width: 50%;
+    width: 40%;
     border-radius: 6px;
     position: relative;
-    margin-left: 10px;
+    display:flex;
+    align-items:center;
+    padding-left:10px;
 }
 
-.voice-description::before {
+/* .voice-description::before {
     content: '';
     display: inline-block;
     position: absolute;
@@ -242,13 +344,14 @@ export default {
     border-top-color: transparent;
     border-left-color: transparent;
     border-bottom-color: transparent;
-}
+} */
 
 .voice-description img {
-    position: absolute;
-    top: 50%;
-    margin-top: -10px;
-    left: 10px;
+    margin-right:10px;
+}
+
+.voice-description span {
+    color: #fff;
 }
 
 .other {
@@ -272,6 +375,21 @@ export default {
     text-align: center;
     color: #888888;
     margin: 20px 0 50px 0
+}
+
+.status {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.voice {
+    animation:voice 1s infinite;
+}
+@keyframes voice {
+    0% {filter:brightness(90%);}
+    50% {filter:brightness(100%);}
+    100% {filter:brightness(90%);}
 }
 </style>
 

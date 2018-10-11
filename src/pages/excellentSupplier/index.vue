@@ -1,29 +1,30 @@
 <template>
     <div class="container" :style="{overflow: visibility ? 'hidden' : 'initial'}">
         <ul class="lists">
-            <li class="list" v-for="(item, index) in listData" :key="index">
+            <li class="list" v-for="(item, index) in listData.data" :key="index">
                 <div class="list-content" 
                     @touchstart="touchstart" 
                     @touchmove="touchmove" 
-                    @touchend="touchend" 
+                    @touchend="touchend"
+                    @touchcancel="touchcancel"
                     :data-index="index"
                     :style="{marginLeft: index == touchIndex ? touchStyle + 'rpx' : 0 + 'rpx'}"
                     >
-                    <img :src="item.image" alt="">
+                    <img :src="item.comLogo" alt="">
                     <div class="info">
-                        <p class="title">{{item.title}}</p>
+                        <p class="title">{{item.domian}}</p>
                         <p class="information">
                             {{item.userName}}&nbsp;&nbsp;&nbsp;
                             {{item.userPhone}}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                            {{item.site}}
+                            {{item.userProCity}}
                         </p>
-                        <p class="class">主营：{{item.class}}</p>
+                        <p class="class">主营：{{item.zycp || ''}}</p>
                     </div>
                 </div>
                 <div class="list-operating">
                     <div class="operating-box" :style="{width: delBtnWidth + 'rpx'}">
-                        <span class="btn exportBtn" @click="exportFun">导出</span>
-                        <span class="btn deleteBtn">删除</span>
+                        <span class="btn exportBtn" :data-userid="item.userId" @click="exportFun">导出</span>
+                        <span class="btn deleteBtn" :data-userid="item.userId" @click="del">删除</span>
                     </div>
                 </div>
             </li>
@@ -31,12 +32,14 @@
         <div class="export">
             <button class="primary" @click="exportFun">全部导出</button>
         </div>
-        <exportComponent :visibility="visibility" @visibility="visibilityFun"></exportComponent>
+        <exportComponent :data="exportArr" :visibility="visibility" @visibility="visibilityFun"></exportComponent>
     </div>
 </template>
 
 <script>
 import exportComponent from '../../components/export';
+import wxRequest from "@/utils/request";
+
 export default {
     name: 'Excellent Supplier',
     data() {
@@ -47,88 +50,13 @@ export default {
             touchIndex: 0,
             startStyle: 0,
             visibility: false,
-            listData: [
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-                {
-                    image:'/static/test_header.jpg',
-                    title: '北京敬业物资回收中心',
-                    userName: '周先生',
-                    userPhone: '13800138000',
-                    site: '广东 广州',
-                    class: '消防器材 安全绳 夜光牌 地贴膜'
-                },
-            ],
+            listData: {
+                pageNo: 1,
+                pageSize: 10,
+                data: []
+            },
+            purchaseOrdersId: null,
+            exportArr: null
         }
     },
     methods: {
@@ -165,15 +93,146 @@ export default {
                 }
             }
         },
-        exportFun() {
+        touchcancel(e) {
+            if(this.touchStyle < -(this.delBtnWidth/2)) {
+                this.touchStyle = -this.delBtnWidth;
+            } else {
+                this.touchStyle = 0;
+            }
+        },
+        del(e) {
+            let userid = e.currentTarget.dataset.userid;
+            let self = this;
+            wxRequest({
+                url: '/supplierController/del',
+                data: {
+                    userId: userid
+                }
+            }, true).then((response) => {
+                wx.showToast({
+                    mask: true,
+                    icon: 'success',
+                    title: '删除成功',
+                    success:() => {
+                        this.listData.data = this.listData.data.filter(item => item.userId != userid);
+                        this.touchStyle = 0;
+                    }
+                })
+            })
+        },
+        exportFun(e) {
             this.visibility = true;
+            let userid = e.currentTarget.dataset.userid;
+            let arr = []
+            if(userid) {
+                arr.push(userid)
+            } else {
+                arr = this.listData.data.map((item) => {
+                    return item.userId
+                })
+            }
+            this.exportArr = arr;
         },
         visibilityFun(options) {
-            this.visibility = options
+            // status -> boolean -> 隐藏弹窗
+            // type -> 1:取消 2:确定
+            this.visibility = options.status;
+            if(options.type == 2) {
+                wxRequest({
+                    url: '/supplierController/excelSend',
+                    data: {
+                        mailbox: options.mail,
+                        supplierIds: this.exportArr
+                    }
+                }, true).then((response) => {
+                    console.log(response)
+                    // wx.showToast({
+                    //     mask: true,
+                    //     icon: 'success',
+                    //     title: '删除成功',
+                    //     success:() => {
+                    //         this.listData.data = this.listData.data.filter(item => item.userId != userid);
+                    //         this.touchStyle = 0;
+                    //     }
+                    // })
+                })
+            }
         }
     },
     components: {
         exportComponent
+    },
+    mounted(options) {
+    },
+    onPullDownRefresh() {
+        this.listData.pageNo = 1;
+        let url;
+        let obj = {
+            pageNo: this.listData.pageNo,
+            pageSize: this.listData.pageSize,
+        }
+        if(this.purchaseOrdersId) {
+            obj.purchaseOrdersId = this.purchaseOrdersId
+            url = '/supplierController/seekSupplier';
+        } else {
+            url = '/supplierController/excellenceSupplier';
+        }
+        
+        wxRequest({
+            url: url,
+            data: obj
+        }, true).then((response) => {
+            if(response.data.list.length > 0) {
+                this.listData.pageNo++
+            }
+            this.listData.data = response.data.list;
+            wx.stopPullDownRefresh();
+        })
+    },
+    onReachBottom() {
+        let url;
+        let obj = {
+            pageNo: this.listData.pageNo,
+            pageSize: this.listData.pageSize,
+        }
+        if(this.purchaseOrdersId) {
+            obj.purchaseOrdersId = this.purchaseOrdersId
+            url = '/supplierController/seekSupplier';
+        } else {
+            url = '/supplierController/excellenceSupplier';
+        }
+        wxRequest({
+            url: url,
+            data: obj
+        }, true).then((response) => {
+            if(response.data.list.length > 0) {
+                this.listData.pageNo++
+            }
+            this.listData.data = [...this.listData.data, ...response.data.list];
+        })
+    },
+    onLoad(options) {
+        Object.assign(this.$data, this.$options.data());
+        let url;
+        let obj = {
+            pageNo: this.listData.pageNo,
+            pageSize: this.listData.pageSize,
+        }
+        if(options.purchaseOrdersId) {
+            this.purchaseOrdersId = obj.purchaseOrdersId = options.purchaseOrdersId
+            url = '/supplierController/seekSupplier';
+        } else {
+            url = '/supplierController/excellenceSupplier';
+        }
+        wxRequest({
+            url: url,
+            data: obj
+        }, true).then((response) => {
+            if(response.data.list.length > 0) {
+                this.listData.pageNo++
+            }
+            this.listData.data = response.data.list;
+        })
     }
 }
 </script>

@@ -16,14 +16,6 @@
         <div class="form-group">
             <label for="">单位</label>
             <input class="flex-1" v-model="unitValue" placeholder="请输入单位">
-            <!-- <div class="flex-1">
-                <picker :value="unitValue" :range="unit" @change="bindPickerChange">
-                    <div class="picker" :class="{placeholder: !unitValue}">
-                    {{unitValue ? unitValue : '请选择'}}
-                    </div>
-                    <div v-if="!unitValue" class="holder-right">></div>
-                </picker>
-            </div> -->
         </div>
 
         <div class="form-group">
@@ -61,7 +53,7 @@
                 <p v-if="!recorder">{{recorderStatus}}</p>
                 <div v-else>
                     <div class="recorder-box">
-                        {{recorder.duration/1000}}
+                        {{recorderDuration/1000}}
                     </div>
                 </div>
             </div>
@@ -76,7 +68,7 @@
             
             <div class="choose-image">
                 <div v-for="(item, index) in chooseImageArr" :key="index" class="choose-item">
-                    <img mode="widthFix" :src="item" alt="">
+                    <img mode="widthFix" :src="baseUrl + item" alt="">
                 </div>
                 <div class="add-btn" @click="chooseImage">
                     <img mode="widthFix" src="/static/icon-9.png" alt="" style="width:30px;">
@@ -153,6 +145,8 @@ export default {
       recorderStatus: "添加90秒语音描述",
       // 录音文件
       recorder: null,
+      // 录音时间
+      recorderDuration: null,
       // 展开补充说明
       supplement: false,
       // 补充说明
@@ -168,7 +162,7 @@ export default {
       // 弹窗展示
       visibilityPop: false,
       // 验证弹窗
-      VerificationPop: false
+      VerificationPop: false,
     };
   },
   methods: {
@@ -193,7 +187,7 @@ export default {
       this.startIcon = "/static/icon-17.png";
       this.stopIcon = "/static/icon-19.png";
       this.playIcon = "/static/icon-22.png";
-      innerAudioContext.src = this.recorder.tempFilePath;
+      innerAudioContext.src = this.recorder;
       innerAudioContext.play();
     },
     // 补充说明事件
@@ -210,11 +204,6 @@ export default {
         this.visibilityPop = true;
       }
     },
-    // 单位change事件
-    // bindPickerChange(e) {
-    //   let index = e.mp.detail.value;
-    //   this.unitValue = this.unit[index];
-    // },
     // 截止事件change事件
     bindDateChange(e) {
       this.deadline = e.mp.detail.value;
@@ -222,9 +211,26 @@ export default {
     // 选择图片
     chooseImage() {
       let self = this;
+      // 选择图片
       wx.chooseImage({
         success(res) {
-          self.chooseImageArr = res.tempFilePaths;
+          self.chooseImageArr = []
+          // 图片上传
+          res.tempFilePaths.forEach(item => {
+            wx.uploadFile({
+              url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+              filePath: item,
+              name: 'file',
+              header: {'buyer_token': store.state.requestKey},
+              formData: { 
+                'resourceType': 'image'
+              },
+              success (res){
+                const data = JSON.parse(res.data)
+                self.chooseImageArr.push(data.data)
+              }
+            })
+          });
         }
       });
     },
@@ -243,7 +249,8 @@ export default {
         unit: this.unitValue, // 单位
         buyDeadline: this.deadline, // 采购截止时间（yyyy-MM-dd HH:mm:ss）
         price: this.productPrice, // 价格
-        audioFile: 'http://hao.haolingsheng.com/ring/000/995/fdd1115ac2c3e1dc84ea878082741e1b.mp3', // this.recorder, // 语音文件路劲
+        audioFile: this.recorder, // 语音文件路劲
+        duration: this.recorderDuration, // 语音时间
         explained: this.supplementarySpecification, // 补充说明
         imgs: this.chooseImageArr.join(',') // 图片路径
       }
@@ -264,7 +271,7 @@ export default {
           case 'price':
             return '价格';
             break;
-          case 'audioFile':
+          case 'audioFile' || 'duration':
             return '语音';
             break;
           case 'explained':
@@ -283,8 +290,28 @@ export default {
           })
           return false;
         }
+        if(key == 'number') {
+          let r = /^[0-9]*[1-9][0-9]*$/;//正整数
+          if(!r.test(obj[key])) {
+            wx.showToast({
+              title: '数量为正整数',
+              icon: 'none',
+              mask: true
+            })
+            return false;
+          }
+        }
+        if(key == 'buyDeadline') {
+          if(new Date(new Date().getFullYear() + '-' + (new Date().getMonth()+1) + '-' + new Date().getDate()).getTime() > new Date(obj[key]).getTime()) {
+            wx.showToast({
+              title: '采购截至时间大于当前时间',
+              icon: 'none',
+              mask: true
+            })
+            return false;
+          }
+        }
       }
-
       
       let { mobile } = this.parsonalData;
 
@@ -293,11 +320,21 @@ export default {
         wxRequest({
           url: "/PurchaseController/publish",
           method: 'POST',
+          header: {
+            'content-type': 'application/x-www-form-urlencoded'
+          },
           data: obj
         }, true).then((response) => {
+          let id = response.data.id;
           wx.navigateTo({
-            url: "/pages/success/main"
+            url: `/pages/success/main?id=${id}&status=1`
           });
+        }).catch(response => {
+          wx.showToast({
+            title: response.data.message,
+            icon: 'none',
+            mask: true
+          })
         })
       } else {
         // 没有填写联系方式
@@ -320,31 +357,31 @@ export default {
         this.recorderStatus = "录音中..." + (this.recorderTime -= 1);
       }, 1000);
     });
-    // recorderManager.onPause((res) => {
-    //     console.log('暂停录音', res)
-    //     this.recorder = res;
-    //     this.startIcon = '/static/icon-17.png';
-    //     this.recorderStatus = '暂停录音';
-    // })
-    // recorderManager.onResume(() => {
-    //     console.log('继续录音')
-    //     this.startIcon = '/static/icon-18.png';
-    //     this.recorderStatus = '录音中';
-    // })
     // 停止录音
     recorderManager.onStop(res => {
       console.log("停止录音", res);
-      this.recorder = res;
+      this.recorderDuration = res.duration
+      // 上传录音
+      let self = this;
+      wx.uploadFile({
+        url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+        filePath: res.tempFilePath,
+        name: 'file',
+        header: {'buyer_token': store.state.requestKey},
+        formData: {
+          'resourceType': 'voice'
+        },
+        success (res){
+          const data = JSON.parse(res.data)
+          self.recorder = store.state.baseUrl + data.data;
+        }
+      })
       this.startIcon = "/static/icon-17.png";
       this.stopIcon = "/static/icon-20.png";
       this.playIcon = "/static/icon-21.png";
       clearInterval(timer);
       this.recorderTime = 90;
     });
-    // recorderManager.onFrameRecorded((res) => {
-    //     const { frameBuffer } = res
-    //     console.log('frameBuffer.byteLength', frameBuffer.byteLength)
-    // })
     // 监听音频停止事件
     innerAudioContext.onStop(() => {
       console.log("监听音频停止事件");
@@ -375,6 +412,9 @@ export default {
   computed: {
     parsonalData() {
       return store.state.parsonal;
+    },
+    baseUrl() {
+      return store.state.baseUrl;
     }
   },
   components: {
@@ -382,7 +422,6 @@ export default {
     releaseVerificationComponent
   },
   onLoad(options) {
-    // console.log('page index onLoad', options, this);
     if(!options.init) {
       Object.assign(this.$data, this.$options.data())
     }

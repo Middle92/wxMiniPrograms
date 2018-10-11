@@ -4,7 +4,7 @@
         <span class="title">
             发布成功
         </span>
-        <button class="primary">查看采购单详情</button>
+        <button class="primary" @click="purchaseDefault">查看采购单详情</button>
         <button class="default" @click="release">继续发布</button>
     </div>
 </template>
@@ -12,17 +12,31 @@
 <script>
 export default {
     data() {
-        return {}
+        return {
+            id: null,
+            status: null
+        }
     },
     methods: {
         release() {
             wx.navigateTo({
                 url: "/pages/purchaseDefault/main"
             });
+        },
+        purchaseDefault() {
+            let id = this.id;
+            let status = this.status;
+            wx.navigateTo({
+                url: `/pages/purchaseOrderDefault/main?id=${id}&status=${status}`
+            });
         }
     },
+    onLoad(query) {
+        this.id  = query.id;
+        this.status  = query.status;
+    },
     onUnload: function () {
-        wx.redirectTo({
+        wx.reLaunch({
             url: "/pages/home/main"
         });
     }
