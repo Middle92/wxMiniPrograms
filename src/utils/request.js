@@ -9,7 +9,7 @@ if(process.env.NODE_ENV === 'development') {
 }
 
 
-function wxRequest(obj, hasToken, duration = 3000) {
+function wxRequest(obj, hasToken, duration = 5000) {
     return new Promise((resolve, rejects) => {
         const requestTask = wx.request({
             url: baseUrl + obj.url,

@@ -14,7 +14,9 @@
         <div class="money">
             <ul>
                 <li v-for="(item, index) in takeMoney" :key="index" @click="item.callback">
-                    <div :class="{active: item.active}" @click="onTakeMoney" :data-index="index">{{item.title}}</div>
+                    <div :class="{active: item.active}" @click="onTakeMoney" :data-index="index">
+                        {{item.title != '其他' ? item.title + '元' : item.title}}
+                    </div>
                 </li>
             </ul>
         </div>
@@ -27,24 +29,26 @@
         </div>
 
         <div class="btns">
-            <button class="primary">立即提现</button>
+            <button class="primary" @click="takeCash">立即提现</button>
         </div>
     </div>
 </template>
 
 <script>
+import wxRequest from '@/utils/request';
+
 export default {
     data() {
         return {
             takeMoney: [
-                {title: '10元', active: true},
-                {title: '30元'},
-                {title: '50元'},
-                {title: '100元'},
-                {title: '300元'},
-                {title: '500元'},
-                {title: '1000元'},
-                {title: '3000元'},
+                {title: 10, active: true},
+                {title: 30},
+                {title: 50},
+                {title: 100},
+                {title: 300},
+                {title: 500},
+                {title: 1000},
+                {title: 3000},
                 {title: '其他', callback: () => {
                     this.otherTakeCash()
                 }},
@@ -72,6 +76,32 @@ export default {
                 }
                 return item;
             })
+        },
+        takeCash() {
+            let item = this.takeMoney.filter(item => item.active)[0];
+            if(item.title != '其他') {
+                wxRequest({
+                    url: '/journalAccountController/withdraw',
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/x-www-form-urlencoded'
+                    },
+                    data: {
+                        money: item.title
+                    }
+                }, true).then(response => {
+                    wx.showToast({
+                        title: data.message,
+                    })
+                }).catch(response => {
+                    let data = response.data;
+                    wx.showToast({
+                        // mask: true,
+                        icon: 'none',
+                        title: data.message,
+                    })
+                })
+            }
         }
     }
 }

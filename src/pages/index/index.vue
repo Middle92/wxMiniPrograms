@@ -31,6 +31,7 @@ async function setUserInfo(url) {
         resolve();
       }
     });
+    
   })
     .then(() => {
       // 获取微信授权
@@ -46,16 +47,20 @@ async function setUserInfo(url) {
     .then(() => {
       // 请求授权注册登录
       return new Promise((resolve, rejects) => {
+        let inviterId = wx.getLaunchOptionsSync().query.inviterId;
+        // console.log(inviterId);
         wxRequest({
           url: "/buyerController/authorizeRegister",
           data: {
             code: store.state.code,
             avatarUrl: store.state.userinfo.avatarUrl,
-            nickName: store.state.userinfo.nickName
+            nickName: store.state.userinfo.nickName,
+            inviterId: inviterId || ''
           }
         }).then(response => {
           // 获取登录获得的接口请求凭据
-          store.dispatch("setRequestKey", response.data);
+          store.dispatch("setRequestKey", response.data.miniappToken);
+          store.dispatch("setBuyerId", response.data.buyerId);
           resolve();
         }).catch(e => {
           wx.showToast({

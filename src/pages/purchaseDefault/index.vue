@@ -61,7 +61,7 @@
                 <p v-if="!recorder">{{recorderStatus}}</p>
                 <div v-else>
                     <div class="recorder-box">
-                        {{recorder.duration/1000}}
+                        {{recorderDuration/1000}}
                     </div>
                 </div>
             </div>
@@ -121,6 +121,14 @@ import store from "@/stores";
 import wxRequest from "@/utils/request";
 import releasePopComponent from "@/components/releasePop";
 import releaseVerificationComponent from "@/components/releaseVerifications";
+// 地址
+let baseUrl;
+if(process.env.NODE_ENV === 'development') {
+    process.env.type === 'test' && (baseUrl = 'http://192.168.0.81:80/bcsj-miniapp')
+    process.env.type === 'dev' && (baseUrl = 'http://192.168.0.151:8082/bcsj-miniapp')
+} else {
+    baseUrl = 'http://192.168.0.151:8082/bcsj-miniapp'
+}
 
 export default {
   data() {
@@ -153,6 +161,8 @@ export default {
       recorderStatus: "添加90秒语音描述",
       // 录音文件
       recorder: null,
+      // 录音时间
+      recorderDuration: null,
       // 展开补充说明
       supplement: false,
       // 补充说明
@@ -193,7 +203,7 @@ export default {
       this.startIcon = "/static/icon-17.png";
       this.stopIcon = "/static/icon-19.png";
       this.playIcon = "/static/icon-22.png";
-      innerAudioContext.src = this.recorder.tempFilePath;
+      innerAudioContext.src = this.recorder;
       innerAudioContext.play();
     },
     // 补充说明事件
@@ -222,9 +232,26 @@ export default {
     // 选择图片
     chooseImage() {
       let self = this;
+      // 选择图片
       wx.chooseImage({
         success(res) {
-          self.chooseImageArr = res.tempFilePaths;
+          self.chooseImageArr = []
+          // 图片上传
+          res.tempFilePaths.forEach(item => {
+            wx.uploadFile({
+              url: baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+              filePath: item,
+              name: 'file',
+              header: {'buyer_token': store.state.requestKey},
+              formData: {
+                'resourceType': 'image'
+              },
+              success (res){
+                const data = JSON.parse(res.data)
+                self.chooseImageArr.push(baseUrl + data.data)
+              }
+            })
+          });
         }
       });
     },
@@ -243,7 +270,7 @@ export default {
         unit: this.unitValue, // 单位
         buyDeadline: this.deadline, // 采购截止时间（yyyy-MM-dd HH:mm:ss）
         price: this.productPrice, // 价格
-        audioFile: 'http://hao.haolingsheng.com/ring/000/995/fdd1115ac2c3e1dc84ea878082741e1b.mp3', // this.recorder, // 语音文件路劲
+        audioFile: this.recorder, // 语音文件路劲
         explained: this.supplementarySpecification, // 补充说明
         imgs: this.chooseImageArr.join(',') // 图片路径
       }
@@ -284,7 +311,6 @@ export default {
           return false;
         }
       }
-
       
       let { mobile } = this.parsonalData;
 
@@ -293,11 +319,16 @@ export default {
         wxRequest({
           url: "/PurchaseController/publish",
           method: 'POST',
+          header: {
+            'content-type': 'application/x-www-form-urlencoded'
+          },
           data: obj
         }, true).then((response) => {
           wx.navigateTo({
             url: "/pages/success/main"
           });
+        }).catch(response => {
+          console.log(response)
         })
       } else {
         // 没有填写联系方式
@@ -334,7 +365,24 @@ export default {
     // 停止录音
     recorderManager.onStop(res => {
       console.log("停止录音", res);
-      this.recorder = res;
+      // this.recorder = res.tempFilePath;
+      // console.log(res.tempFilePath)
+      this.recorderDuration = res.duration
+      // 上传录音
+      let self = this;
+      wx.uploadFile({
+        url: baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+        filePath: res.tempFilePath,
+        name: 'file',
+        header: {'buyer_token': store.state.requestKey},
+        formData: {
+          'resourceType': 'voice'
+        },
+        success (res){
+          const data = JSON.parse(res.data)
+          self.recorder = baseUrl + data.data;
+        }
+      })
       this.startIcon = "/static/icon-17.png";
       this.stopIcon = "/static/icon-20.png";
       this.playIcon = "/static/icon-21.png";

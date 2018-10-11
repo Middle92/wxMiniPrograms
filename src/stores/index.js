@@ -9,7 +9,8 @@ export default new Vuex.Store({
         userinfo: {}, // 用户信息
         code: null, // 微信授权码
         requestKey: null, // 接口请求密匙
-        parsonal: {} // 个人信息
+        parsonal: {}, // 个人信息
+        buyerId: null //采购商主键
     },
     getters: {
         purchaseList: (state) => (obj) => {
@@ -34,6 +35,9 @@ export default new Vuex.Store({
         },
         setRequestKey(state, key) {
             state.requestKey = key;
+        },
+        setBuyerId(state, key) {
+            state.buyerId = key;
         },
         editParsonal(state, obj) {
             for(let key in obj) {
@@ -73,6 +77,9 @@ export default new Vuex.Store({
         },
         setRequestKey(context, key) {
             context.commit('setRequestKey', key)
+        },
+        setBuyerId(context, key) {
+            context.commit('setBuyerId', key)
         }
     },
     modules: {
