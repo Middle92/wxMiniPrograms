@@ -425,7 +425,7 @@ export default {
     if(!options.init) {
       Object.assign(this.$data, this.$options.data())
     }
-  },
+  }
 };
 </script>
 
