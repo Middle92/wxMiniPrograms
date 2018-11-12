@@ -23,14 +23,17 @@
                 </div>
                 <div class="list-operating">
                     <div class="operating-box" :style="{width: delBtnWidth + 'rpx'}">
-                        <span class="btn exportBtn" :data-userid="item.userId" @click="exportFun">导出</span>
-                        <span class="btn deleteBtn" :data-userid="item.userId" @click="del">删除</span>
+                        <span class="btn exportBtn" :data-userid="item.id" @click="exportFun">导出</span>
+                        <span class="btn deleteBtn" :data-userid="item.id" @click="del">删除</span>
                     </div>
                 </div>
             </li>
+            <div v-if="listData.data.length <= 0" class="data-none">
+                <span>暂无数据</span>
+            </div>
         </ul>
         <div class="export">
-            <button class="primary" @click="exportFun">全部导出</button>
+            <button class="primary" @click="exportFun" :disabled="listData.data.length <= 0">全部导出</button>
         </div>
         <exportComponent :data="exportArr" :visibility="visibility" @visibility="visibilityFun"></exportComponent>
     </div>
@@ -103,21 +106,29 @@ export default {
         del(e) {
             let userid = e.currentTarget.dataset.userid;
             let self = this;
-            wxRequest({
-                url: '/supplierController/del',
-                data: {
-                    userId: userid
-                }
-            }, true).then((response) => {
-                wx.showToast({
-                    mask: true,
-                    icon: 'success',
-                    title: '删除成功',
-                    success:() => {
-                        this.listData.data = this.listData.data.filter(item => item.userId != userid);
-                        this.touchStyle = 0;
+            wx.showModal({
+                title: '删除',
+                content: '确认删除么？',
+                success(res) {
+                    if(res.confirm) {
+                        wxRequest({
+                            url: '/supplierController/del',
+                            data: {
+                                userId: userid
+                            }
+                        }, true).then((response) => {
+                            wx.showToast({
+                                mask: true,
+                                icon: 'success',
+                                title: '删除成功',
+                                success:() => {
+                                    self.listData.data = self.listData.data.filter(item => item.id != userid);
+                                    self.touchStyle = 0;
+                                }
+                            })
+                        })
                     }
-                })
+                }
             })
         },
         exportFun(e) {
@@ -128,41 +139,57 @@ export default {
                 arr.push(userid)
             } else {
                 arr = this.listData.data.map((item) => {
-                    return item.userId
+                    return item.id
                 })
             }
-            this.exportArr = arr;
+            this.exportArr = arr.join(',');
         },
         visibilityFun(options) {
             // status -> boolean -> 隐藏弹窗
             // type -> 1:取消 2:确定
-            this.visibility = options.status;
             if(options.type == 2) {
+                wx.showLoading({
+                    title: '导出中...',
+                    mask: true
+                })
                 wxRequest({
                     url: '/supplierController/excelSend',
                     data: {
                         mailbox: options.mail,
-                        supplierIds: this.exportArr
+                        ids: this.exportArr
                     }
                 }, true).then((response) => {
-                    console.log(response)
-                    // wx.showToast({
-                    //     mask: true,
-                    //     icon: 'success',
-                    //     title: '删除成功',
-                    //     success:() => {
-                    //         this.listData.data = this.listData.data.filter(item => item.userId != userid);
-                    //         this.touchStyle = 0;
-                    //     }
-                    // })
+                    wx.hideLoading();
+                    wx.showToast({
+                        mask: true,
+                        icon: 'success',
+                        title: '导出成功',
+                        success:() => {
+                            setTimeout(() => {
+                                this.visibility = options.status;
+                            })
+                        }
+                    })
+                }).catch(() => {
+                    wx.hideLoading();
+                    wx.showToast({
+                        mask: true,
+                        icon: 'success',
+                        title: '请求出错',
+                        success:() => {
+                            setTimeout(() => {
+                                this.visibility = options.status;
+                            })
+                        }
+                    })
                 })
+            } else {
+                this.visibility = options.status
             }
         }
     },
     components: {
         exportComponent
-    },
-    mounted(options) {
     },
     onPullDownRefresh() {
         this.listData.pageNo = 1;

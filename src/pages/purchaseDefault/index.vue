@@ -10,7 +10,7 @@
 
         <div class="form-group">
             <label for="">数量</label>
-            <input class="flex-1" type="digit" v-model="productNumber" placeholder="请输入采购数量">
+            <input class="flex-1" type="number" v-model="productNumber" placeholder="请输入采购数量">
         </div>
 
         <div class="form-group">
@@ -21,7 +21,7 @@
         <div class="form-group">
             <label for="">采购截至时间</label>
             <div class="flex-1">
-                <picker mode="date" :value="deadline" @change="bindDateChange">
+                <picker mode="date" :value="deadline" :start="startDate" @change="bindDateChange">
                     <div class="picker" :class="{placeholder: !deadline}">
                     {{deadline ? deadline : '请选择'}}
                     </div>
@@ -67,8 +67,8 @@
             </div>
             
             <div class="choose-image">
-                <div v-for="(item, index) in chooseImageArr" :key="index" class="choose-item">
-                    <img mode="widthFix" :src="baseUrl + item" alt="">
+                <div v-for="(item, index) in chooseImageArr" :key="index" class="choose-item" :data-index="index" @click="previewImage">
+                    <img mode="widthFix" :src="item" alt="">
                 </div>
                 <div class="add-btn" @click="chooseImage">
                     <img mode="widthFix" src="/static/icon-9.png" alt="" style="width:30px;">
@@ -88,7 +88,7 @@
         </p>
 
         <div class='submit-btns'>
-            <button class='primary' :disabled="!company" @click="submit">确认并提交</button>
+            <button class='primary' @click="submit" :disabled="!company">确认并提交</button>
         </div>
 
         <p class="company-info" @click="companyFun">
@@ -125,8 +125,6 @@ export default {
       productLengthValue: 30,
       // 产品数量
       productNumber: null,
-      // 产品单位
-      // unit: ["px", "rpx", "rem", "..."],
       // 产品单位值
       unitValue: null,
       // 截止时间
@@ -162,7 +160,7 @@ export default {
       // 弹窗展示
       visibilityPop: false,
       // 验证弹窗
-      VerificationPop: false,
+      VerificationPop: false
     };
   },
   methods: {
@@ -184,11 +182,13 @@ export default {
     },
     // 播放音频事件
     playRecorder() {
-      this.startIcon = "/static/icon-17.png";
-      this.stopIcon = "/static/icon-19.png";
-      this.playIcon = "/static/icon-22.png";
-      innerAudioContext.src = this.recorder;
-      innerAudioContext.play();
+      if (this.recorder) {
+        this.startIcon = "/static/icon-17.png";
+        this.stopIcon = "/static/icon-19.png";
+        this.playIcon = "/static/icon-22.png";
+        innerAudioContext.src = this.recorder;
+        innerAudioContext.play();
+      }
     },
     // 补充说明事件
     supplementFun() {
@@ -196,7 +196,13 @@ export default {
     },
     // 点击企业信息
     companyFun() {
-      let { company, companyAddress, jobTitle, mainProduct, trademark } = this.parsonalData;
+      let {
+        company,
+        companyAddress,
+        jobTitle,
+        mainProduct,
+        trademark
+      } = this.parsonalData;
 
       if (company && companyAddress && jobTitle && mainProduct && trademark) {
         this.company = !this.company;
@@ -214,23 +220,24 @@ export default {
       // 选择图片
       wx.chooseImage({
         success(res) {
-          self.chooseImageArr = []
+          // self.chooseImageArr = []
+          self.chooseImageArr = res.tempFilePaths;
           // 图片上传
-          res.tempFilePaths.forEach(item => {
-            wx.uploadFile({
-              url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
-              filePath: item,
-              name: 'file',
-              header: {'buyer_token': store.state.requestKey},
-              formData: { 
-                'resourceType': 'image'
-              },
-              success (res){
-                const data = JSON.parse(res.data)
-                self.chooseImageArr.push(data.data)
-              }
-            })
-          });
+          // res.tempFilePaths.forEach(item => {
+          //   wx.uploadFile({
+          //     url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+          //     filePath: item,
+          //     name: 'file',
+          //     header: {'buyer_token': store.state.requestKey},
+          //     formData: {
+          //       'resourceType': 'image'
+          //     },
+          //     success (res){
+          //       const data = JSON.parse(res.data)
+          //       self.chooseImageArr.push(data.data)
+          //     }
+          //   })
+          // });
         }
       });
     },
@@ -243,6 +250,34 @@ export default {
     },
     // 提交
     submit() {
+      let returnName = str => {
+        switch (str) {
+          case "product":
+            return "产品";
+            break;
+          case "number":
+            return "数量";
+            break;
+          case "unit":
+            return "单位";
+            break;
+          case "buyDeadline":
+            return "采购截至时间";
+            break;
+          case "price":
+            return "价格";
+            break;
+          case "audioFile" || "duration":
+            return "语音";
+            break;
+          case "explained":
+            return "请输入补充说明";
+            break;
+          case "imgs":
+            return "添加图片";
+            break;
+        }
+      };
       let obj = {
         product: this.product, // 产品名称
         number: this.productNumber, // 数量
@@ -252,94 +287,165 @@ export default {
         audioFile: this.recorder, // 语音文件路劲
         duration: this.recorderDuration, // 语音时间
         explained: this.supplementarySpecification, // 补充说明
-        imgs: this.chooseImageArr.join(',') // 图片路径
-      }
-      let returnName = (str) => {
-        switch(str) {
-          case 'product':
-            return '产品';
-            break;
-          case 'number':
-            return '数量';
-            break;
-          case 'unit':
-            return '单位';
-            break;
-          case 'buyDeadline':
-            return '采购截至时间';
-            break;
-          case 'price':
-            return '价格';
-            break;
-          case 'audioFile' || 'duration':
-            return '语音';
-            break;
-          case 'explained':
-            return '请输入补充说明';
-            break;
-          case 'imgs':
-            return '添加图片';
-            break;
-        }
-      }
-      for(let key in obj) {
-        if(!obj[key]) {
+        imgs: this.chooseImageArr // 图片路径
+        // company:     this.company //是否展示企业信息
+      };
+
+      for (let key in obj) {
+        if (!obj[key] && key != "imgs") {
           wx.showToast({
-            icon: 'none',
-            title: `${returnName(key)}不能未空！`,
-          })
+            mask: true,
+            icon: "none",
+            title: `${returnName(key)}不能未空！`
+          });
           return false;
         }
-        if(key == 'number') {
-          let r = /^[0-9]*[1-9][0-9]*$/;//正整数
-          if(!r.test(obj[key])) {
+        if (typeof obj[key] == "string" && isEmojiCharacter(obj[key])) {
+          wx.showToast({
+            mask: true,
+            icon: "none",
+            title: `${returnName(key)}不能存在表情！`
+          });
+          return false;
+        }
+        if (key == "number") {
+          let r = /^[0-9]*[1-9][0-9]*$/; //正整数
+          if (!r.test(obj[key])) {
             wx.showToast({
-              title: '数量为正整数',
-              icon: 'none',
+              title: "数量为正整数",
+              icon: "none",
               mask: true
-            })
+            });
             return false;
           }
         }
-        if(key == 'buyDeadline') {
-          if(new Date(new Date().getFullYear() + '-' + (new Date().getMonth()+1) + '-' + new Date().getDate()).getTime() > new Date(obj[key]).getTime()) {
+        if (key == "buyDeadline") {
+          if (
+            new Date(
+              new Date().getFullYear() +
+                "-" +
+                (new Date().getMonth() + 1) +
+                "-" +
+                new Date().getDate()
+            ).getTime() > new Date(obj[key]).getTime()
+          ) {
             wx.showToast({
-              title: '采购截至时间大于当前时间',
-              icon: 'none',
+              title: "采购截至时间大于当前时间",
+              icon: "none",
               mask: true
-            })
+            });
             return false;
           }
         }
       }
-      
-      let { mobile } = this.parsonalData;
 
-      if (mobile) {
-        // 已填写联系方式
-        wxRequest({
-          url: "/PurchaseController/publish",
-          method: 'POST',
-          header: {
-            'content-type': 'application/x-www-form-urlencoded'
-          },
-          data: obj
-        }, true).then((response) => {
-          let id = response.data.id;
-          wx.navigateTo({
-            url: `/pages/success/main?id=${id}&status=1`
-          });
-        }).catch(response => {
-          wx.showToast({
-            title: response.data.message,
-            icon: 'none',
-            mask: true
-          })
-        })
-      } else {
+      let { mobile } = this.parsonalData;
+      if (!mobile) {
         // 没有填写联系方式
         this.VerificationPop = true;
+        return false;
       }
+
+      wx.showLoading({
+        title: "提交中...",
+        mask: true
+      });
+
+      new Promise((resolve, reject) => {
+        let arr = [];
+        if (this.chooseImageArr.length == 0) {
+          obj.imgs = arr.join(",");
+          resolve();
+        } else {
+          this.chooseImageArr.forEach(item => {
+            wx.uploadFile({
+              url: store.state.baseUrl + "/buyer/fileController/upload", //仅为示例，非真实的接口地址
+              filePath: item,
+              name: "file",
+              header: { buyer_token: store.state.requestKey },
+              formData: {
+                resourceType: "image"
+              },
+              success: res => {
+                const data = JSON.parse(res.data);
+                arr.push(data.data);
+                if (arr.length == this.chooseImageArr.length) {
+                  obj.imgs = arr.join(",");
+                  resolve();
+                }
+              }
+            });
+          });
+        }
+      })
+        .then(res => {
+          return new Promise((resolve, reject) => {
+            wx.uploadFile({
+              url: store.state.baseUrl + "/buyer/fileController/upload", //仅为示例，非真实的接口地址
+              filePath: this.recorder,
+              name: "file",
+              header: { buyer_token: store.state.requestKey },
+              formData: {
+                resourceType: "voice"
+              },
+              success(response) {
+                let data = JSON.parse(response.data);
+                obj.audioFile = data.data;
+                resolve();
+              },
+              fail(response) {
+                wx.showToast({
+                  title: JSON.stringify(response),
+                  icon: "none",
+                  mask: true
+                });
+              }
+            });
+          });
+        })
+        .then(res => {
+          wxRequest(
+            {
+              url: "/PurchaseController/publish",
+              method: "POST",
+              header: {
+                "content-type": "application/x-www-form-urlencoded"
+              },
+              data: obj
+            },
+            true
+          )
+          .then(response => {
+            let id = response.data.id;
+            wx.navigateTo({
+              url: `/pages/success/main?id=${id}&status=1`
+            });
+          })
+          .catch(response => {
+            wx.showToast({
+              title: response.data.message,
+              icon: "none",
+              mask: true
+            });
+          });
+          wx.hideLoading();
+        })
+        .catch(res => {
+          wx.showToast({
+            title: res.data.message,
+            icon: "none",
+            mask: true
+          });
+        });
+    },
+    // 预览图片
+    previewImage(e) {
+      let index = e.currentTarget.dataset.index;
+      this.chooseImageArr;
+      wx.previewImage({
+        urls: this.chooseImageArr,
+        current: this.chooseImageArr[index]
+      });
     }
   },
   mounted(options) {
@@ -360,22 +466,23 @@ export default {
     // 停止录音
     recorderManager.onStop(res => {
       console.log("停止录音", res);
-      this.recorderDuration = res.duration
+      this.recorderDuration = res.duration;
+      this.recorder = res.tempFilePath;
       // 上传录音
-      let self = this;
-      wx.uploadFile({
-        url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
-        filePath: res.tempFilePath,
-        name: 'file',
-        header: {'buyer_token': store.state.requestKey},
-        formData: {
-          'resourceType': 'voice'
-        },
-        success (res){
-          const data = JSON.parse(res.data)
-          self.recorder = store.state.baseUrl + data.data;
-        }
-      })
+      // let self = this;
+      // wx.uploadFile({
+      //   url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
+      //   filePath: res.tempFilePath,
+      //   name: 'file',
+      //   header: {'buyer_token': store.state.requestKey},
+      //   formData: {
+      //     'resourceType': 'voice'
+      //   },
+      //   success (res){
+      //     const data = JSON.parse(res.data)
+      //     self.recorder = store.state.baseUrl + data.data;
+      //   }
+      // })
       this.startIcon = "/static/icon-17.png";
       this.stopIcon = "/static/icon-20.png";
       this.playIcon = "/static/icon-21.png";
@@ -399,13 +506,14 @@ export default {
   },
   watch: {
     product(value, oldValue) {
-      if(value) {
+      if (value) {
         this.productLengthValue = this.productLength - value.length;
       }
     },
     supplementarySpecification(value, oldValue) {
-      if(value) {
-        this.supplementarySpecificationLengthValue = this.supplementarySpecificationLength - value.length;
+      if (value) {
+        this.supplementarySpecificationLengthValue =
+          this.supplementarySpecificationLength - value.length;
       }
     }
   },
@@ -415,6 +523,16 @@ export default {
     },
     baseUrl() {
       return store.state.baseUrl;
+    },
+    startDate() {
+      let date = new Date(Date.now());
+      let Year = date.getFullYear();
+      let Month =
+        date.getMonth() + 1 < 10
+          ? "0" + date.getMonth() + 1
+          : date.getMonth() + 1;
+      let Day = date.getDate() + 1;
+      return Year + "-" + Month + "-" + Day;
     }
   },
   components: {
@@ -422,11 +540,55 @@ export default {
     releaseVerificationComponent
   },
   onLoad(options) {
-    if(!options.init) {
-      Object.assign(this.$data, this.$options.data())
+    if (!options.init) {
+      Object.assign(this.$data, this.$options.data());
     }
+  },
+  onUnload() {
+    recorderManager.stop();
   }
 };
+
+function isEmojiCharacter(substring) {
+  for (var i = 0; i < substring.length; i++) {
+    var hs = substring.charCodeAt(i);
+    if (0xd800 <= hs && hs <= 0xdbff) {
+      if (substring.length > 1) {
+        var ls = substring.charCodeAt(i + 1);
+        var uc = (hs - 0xd800) * 0x400 + (ls - 0xdc00) + 0x10000;
+        if (0x1d000 <= uc && uc <= 0x1f77f) {
+          return true;
+        }
+      }
+    } else if (substring.length > 1) {
+      var ls = substring.charCodeAt(i + 1);
+      if (ls == 0x20e3) {
+        return true;
+      }
+    } else {
+      if (0x2100 <= hs && hs <= 0x27ff) {
+        return true;
+      } else if (0x2b05 <= hs && hs <= 0x2b07) {
+        return true;
+      } else if (0x2934 <= hs && hs <= 0x2935) {
+        return true;
+      } else if (0x3297 <= hs && hs <= 0x3299) {
+        return true;
+      } else if (
+        hs == 0xa9 ||
+        hs == 0xae ||
+        hs == 0x303d ||
+        hs == 0x3030 ||
+        hs == 0x2b55 ||
+        hs == 0x2b1c ||
+        hs == 0x2b1b ||
+        hs == 0x2b50
+      ) {
+        return true;
+      }
+    }
+  }
+}
 </script>
 
 <style scoped>

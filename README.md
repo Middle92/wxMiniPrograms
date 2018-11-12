@@ -33,7 +33,7 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
 "pages/excellentSupplier/main", // 优秀供应商
 "pages/advertisement/main", // 首页头部广告，“推荐玩法”
 "pages/purchaseDefault/main" // 添加采购商
-"pages/statement/main" // 我的申述
+"pages/statement/main" // 我的申诉
 ```
 
 #filter(mpvue过滤器无法使用)

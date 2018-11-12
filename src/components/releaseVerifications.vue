@@ -19,7 +19,7 @@
             <div class="form-group">
                 <label for="">验证码</label>
                 <div class="flex-1">
-                    <input type="digit" v-model="codeValue" placeholder="请输入4位数验证码">
+                    <input type="digit" v-model="codeValue" placeholder="请输入6位数验证码">
                 </div>
                 <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
             </div>
@@ -29,7 +29,7 @@
                     <button @click="$emit('visibility', false)">取消</button>
                 </div>
                 <div class="btn">
-                    <button class="primary" @click="OK" :disabled="!getCodeValue">确定</button>
+                    <button class="primary" @click="OK" :disabled="!codeValue">确定</button>
                 </div>
             </div>
         </div>
@@ -51,7 +51,6 @@ export default {
     return {
       name: null,
       mobile: null,
-      getCodeValue: null,
       codeValue: null,
       getCodeBtn: true,
       btnText: '获取验证码',
@@ -73,6 +72,22 @@ export default {
           title: '填写姓名'
         })
       }else {
+        // 验证码按钮disabled
+        this.getCodeBtn = false;
+        this.btnText = this.btnTextTime;
+        // this.getCodeValue = response.data;
+        let timer;
+        timer = setInterval(() => {
+          this.btnText = this.btnTextTime -= 1;
+          if(this.btnTextTime <= 0 || !this.visibility) {
+            clearInterval(timer)
+            this.btnText = '获取验证码';
+            this.btnTextTime = 60;
+            this.getCodeBtn = true;
+            // this.getCodeValue = null;
+            return false;
+          }
+        }, 1000)
         wxRequest({
           url: '/buyerController/getAuthCode',
           data: {
@@ -80,29 +95,23 @@ export default {
           }
         }, true)
           .then((response) => {
-            // 验证码按钮disabled
-            this.getCodeBtn = false;
-            this.btnText = this.btnTextTime;
-            this.getCodeValue = response.data;
-
-            let timer;
-            timer = setInterval(() => {
-              this.btnText = this.btnTextTime -= 1;
-              if(this.btnTextTime <= 0 || !this.visibility) {
-                clearInterval(timer)
-                this.btnText = '获取验证码';
-                this.btnTextTime = 60;
-                this.getCodeBtn = true;
-                this.getCodeValue = null;
-                return false;
-              }
-            }, 1000)
+            wx.showToast({
+              icon: 'none',
+              title: response.message
+            })
+          })
+          .catch((e) => {
+            console.log(e)
+            wx.showToast({
+              icon: 'none',
+              title: e.data.message
+            })
           })
       }
     }, 
     // 确定按钮
     OK() {
-      if(this.codeValue === this.getCodeValue) {
+      let self = this;
         wxRequest({
           url: '/buyerController/bindingMobile',
           method: 'POST',
@@ -114,25 +123,23 @@ export default {
             mobile: Number(this.mobile),
             code: Number(this.codeValue)
           }
-        }, true)
-          .then(response => {
-            $emit('visibility', false);
-            wx.navigateTo({
-              url: "/pages/success/main"
-            });
+        }, true).then(response => {
+          wx.showToast({
+            icon: 'success',
+            title: '设置成功',
+            success: function () {
+              store.dispatch("setParsonal", {mobile: self.mobile, name: self.name});
+              setTimeout(() => {
+                self.$emit('visibility', false);
+              }, 2000)
+            }
           })
-          .catch((e) => {
-            wx.showToast({
-              icon: 'none',
-              title: e.data.message
-            })
+        }).catch((e) => {
+          wx.showToast({
+            icon: 'none',
+            title: e.data.message
           })
-      } else {
-        wx.showToast({
-          icon: 'none',
-          title: '验证码错误'
         })
-      }
     }
   },
   watch: {

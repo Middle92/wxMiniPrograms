@@ -35,8 +35,12 @@
                     <div 
                         class='item-right' 
                         :class="(item.type == 1 && 'profit') || (item.type == 0 && 'loss') || (item.type == 3 && 'out-account')">
-                            {{item.money > 0 ? '+' + item.money : item.money}}元
+                            {{item.type > 0 ? '+' + item.money : '-' + item.money}}元
                     </div>
+                </div>
+
+                <div v-if="incomeList.list.length <= 0" class="data-none">
+                    <span>暂无数据</span>
                 </div>
             </div>
         </div>
@@ -46,7 +50,7 @@
                 <button class='default' @click="takecash">提现</button>
             </div>
             <div class='btn'>
-                <button class='primary'>邀请好友赚收益</button>
+                <button class='primary' open-type="share">邀请好友赚收益</button>
             </div>
         </div>
     </div>
@@ -60,66 +64,6 @@ import wxRequest from "@/utils/request";
 export default {
   data() {
     return {
-      // todayIncome: utils.fixed(10.0, 2),
-      // totalIncome: utils.fixed(200.0, 2),
-      // balance: utils.fixed(160.0, 2),
-      // withdraw: utils.fixed(10.0, 2),
-      // incomeList: [
-      //   {
-      //     title: "广州市凯明有限公司在线询价",
-      //     date: "2018-06-05 11:05",
-      //     type: 1, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-已到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 2, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-未到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 3, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   },
-      //   {
-      //     title: "广州市凯明有限公司在线询价",
-      //     date: "2018-06-05 11:05",
-      //     type: 1, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-已到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 2, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-未到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 3, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   },
-      //   {
-      //     title: "广州市凯明有限公司在线询价",
-      //     date: "2018-06-05 11:05",
-      //     type: 1, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-已到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 2, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   },
-      //   {
-      //     title: "提现申请-未到账",
-      //     date: "2018-06-05 11:05",
-      //     type: 3, // 1:收益 2:已到账 3:未到账
-      //     amount: utils.fixed(-10.0, 2)
-      //   }
-      // ],
       incomeList: {
         pageNo: 1,
         pageSize: 10,
@@ -143,7 +87,7 @@ export default {
     // 提现中
     withdraw() {
       return utils.fixed(stores.state.parsonal.withdraw, 2);
-    },
+    }
   },
   methods: {
     takecash() {
@@ -153,15 +97,116 @@ export default {
     }
   },
   mounted() {
-    wxRequest({
-      url: '/journalAccountController/list',
-      data: {
-        pageNo: this.incomeList.pageNo,
-        pageSize: this.incomeList.pageSize
-      }
-    }, true).then(response => {
+    wxRequest(
+      {
+        url: "/journalAccountController/list",
+        data: {
+          pageNo: this.incomeList.pageNo,
+          pageSize: this.incomeList.pageSize
+        }
+      },
+      true
+    ).then(response => {
       this.incomeList.list = response.data.list;
-    })
+      if (response.data.list.length > 0) {
+        this.incomeList.pageNo++;
+      }
+      wxRequest(
+        {
+          url: "/buyerController/findInfo",
+        },
+        true
+      ).then(response => {
+        stores.dispatch("setParsonal", response.data);
+      });
+    });
+  },
+  onShareAppMessage() {
+    return {
+      title: '推荐有奖',
+      path: '/pages/index/main?inviterId=' + stores.state.buyerId,
+    }
+  },
+  onPullDownRefresh: function(e) {
+    this.incomeList.pageNo = 1
+    wxRequest(
+      {
+        url: "/journalAccountController/list",
+        data: {
+          pageNo: this.incomeList.pageNo,
+          pageSize: this.incomeList.pageSize
+        }
+      },
+      true
+    ).then(response => {
+      this.incomeList.list = response.data.list;
+      if (response.data.list.length > 0) {
+        this.incomeList.pageNo++;
+      }
+      wxRequest(
+        {
+          url: "/buyerController/findInfo",
+        },
+        true
+      ).then(response => {
+        stores.dispatch("setParsonal", response.data);
+        wx.stopPullDownRefresh();
+      });
+    });
+  },
+  onReachBottom: function() {
+    wxRequest(
+      {
+        url: "/journalAccountController/list",
+        data: {
+          pageNo: this.incomeList.pageNo,
+          pageSize: this.incomeList.pageSize
+        }
+      },
+      true
+    ).then(response => {
+      incomeList.list = [...incomeList.list, ...response.data.list];
+      if (response.data.list.length > 0) {
+        incomeList.pageNo++;
+      }
+      wxRequest(
+        {
+          url: "/buyerController/findInfo",
+        },
+        true
+      ).then(response => {
+        stores.dispatch("setParsonal", response.data);
+      });
+    });
+  },
+  onLoad(options) {
+    Object.assign(this.$data, this.$options.data());
+  },
+  onShow(obj) {
+    this.incomeList.pageNo = 1
+    wxRequest(
+      {
+        url: "/journalAccountController/list",
+        data: {
+          pageNo: this.incomeList.pageNo,
+          pageSize: this.incomeList.pageSize
+        }
+      },
+      true
+    ).then(response => {
+      this.incomeList.list = response.data.list;
+      if (response.data.list.length > 0) {
+        this.incomeList.pageNo++;
+      }
+      wxRequest(
+        {
+          url: "/buyerController/findInfo",
+        },
+        true
+      ).then(response => {
+        stores.dispatch("setParsonal", response.data);
+      });
+    });
   }
 };
 </script>

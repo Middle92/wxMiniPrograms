@@ -1,7 +1,14 @@
 <template>
-    <div class='container'>
+    <div class='container' :style="{opacity: isOpacity ? 1 : 0}">
         <!-- 顶部广告 -->
-        <image :src="imgUrls" class="slide-image" @click="advertisement"/>
+        <swiper v-if="imgUrls && imgUrls.length > 1">
+            <block v-for="(item, index) in imgUrls" :key="index">
+                <swiper-item>
+                    <image :src="baseUrl + item.imgUrl" class="slide-image" height="150"/>
+                </swiper-item>
+            </block>
+        </swiper>
+        <image v-else-if="imgUrls" :src="baseUrl + imgUrls[0].imgUrl" class="slide-image" @click="advertisement"/>
         <!-- 图标 -->
         <ul class="icons">
             <li v-for="(item, index) in iconData" :key="index" @click="item.callback">
@@ -20,36 +27,45 @@
             </ul>
 
             <div class="tab-content">
-                <ul v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
-                    <li v-for="(ite, inde) in item.data" :key="inde">
-                      <div class="product" :data-id="ite.id" :data-status="ite.status" @click="toDefault">
-                          <img :src='baseUrl + ite.productImg'/>
-                          <div class='info'>
-                              <p class='title'>{{ite.product}}</p>
-                              <div class='detail-p'>
-                                  <p>数量：{{ite.number }}</p>
-                                  <p>规格：{{ite.unit}}</p>
-                              </div>
-                              <ul class="additional">
-                                  <li>阅读：{{ite.browseCount}}次</li>
-                                  <li>报价：{{ite.offerCount}}次</li>
-                                  <li>收益：{{ite.totalIncome}}元</li>
-                              </ul>
+              <ul v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
+                <li v-for="(ite, inde) in item.data" :key="inde">
+                  <div class="product" :data-id="ite.id" :data-status="ite.status" @click="toDefault">
+                      <img :src="ite.productImg ? baseUrl + ite.productImg : '/static/logo.jpg'"/>
+                      <div class='info'>
+                          <p class='title'>{{ite.product}}</p>
+                          <div class='detail-p'>
+                              <p>数量：{{ite.number }}</p>
+                              <p>规格：{{ite.unit}}</p>
                           </div>
+                          <ul class="additional">
+                              <li>阅读：{{ite.browseCount}}次</li>
+                              <li>报价：{{ite.offerCount}}次</li>
+                              <li>收益：{{ite.totalIncome}}元</li>
+                          </ul>
                       </div>
-                      <ul class="share"><!-- v-if="ite.read" -->
-                          <li 
-                            v-for="(it, ind) in share" 
-                            :key="ind" 
-                            :data-id="ite.id" 
-                            @click="it.callback"
-                            v-if="!(it.title == '邀请报价' && item.title == '已结束')">
-                              <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
-                              {{it.title}}
-                          </li>
-                      </ul>
-                    </li>
-                </ul>
+                  </div>
+                  <ul class="share"><!-- v-if="ite.read" -->
+                      <li 
+                        v-for="(it, ind) in share" 
+                        :key="ind" 
+                        :data-id="ite.id" 
+                        @click="it.callback"
+                        v-if="!(it.title == '邀请报价' && item.title == '已结束')">
+                          <button v-if="it.openType" :data-id="ite.id" :data-status="ite.status" open-type="share">
+                            <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
+                            {{it.title}}
+                          </button>
+                          <button v-else>
+                            <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
+                            {{it.title}}
+                          </button>
+                      </li>
+                  </ul>
+                </li>
+                <div v-if="item.data.length <= 0" class="data-none">
+                  <span>暂无数据</span>
+                </div>
+              </ul>
             </div>
         </div>
         <!-- 发布采购单icon -->
@@ -70,7 +86,8 @@ var query = wx.createSelectorQuery();
 export default {
   data() {
     return {
-      imgUrls: "/static/bg-1.png",
+      isOpacity: false,
+      imgUrls: null,
       iconData: [
         {
           title: "推荐有奖",
@@ -132,14 +149,12 @@ export default {
         {
           title: "邀请报价",
           icon: "/static/icon-7.png",
-          callback: (e) => {
-            this.toDefault(e, 'offer')
-          }
+          openType: true,
         },
         {
           title: "分享到朋友圈",
           icon: "/static/icon-5.png",
-          callback: (e) => {
+          callback: e => {
             let id = e.currentTarget.dataset.id;
             wx.navigateTo({
               url: "/pages/share/main?id=" + id
@@ -202,26 +217,15 @@ export default {
         url: "/pages/purchaseDefault/main"
       });
     },
-    toDefault(e, type='') {
-      let id = e.currentTarget.dataset.id
-      let status = e.currentTarget.dataset.status
+    toDefault(e, type = "") {
+      let id = e.currentTarget.dataset.id;
+      let status = e.currentTarget.dataset.status;
       wx.navigateTo({
         url: `/pages/purchaseOrderDefault/main?type=${type}&id=${id}&status=${status}`
       });
     }
   },
   mounted() {
-    setTimeout(() => {
-      const _this = this;
-      wx
-        .createSelectorQuery()
-        .select(".tab")
-        .boundingClientRect(function(rect) {
-          _this.scrollTop = rect.top;
-        })
-        .exec();
-    });
-
     this.tab.map(item => {
       store.getters
         .purchaseList({
@@ -229,11 +233,34 @@ export default {
           status: item.status
         })
         .then(response => {
-          if(response.data.list.length > 0) {
+          if (response.data.list.length > 0) {
             item.pageNo++;
           }
           item.data = response.data.list;
+          this.isOpacity = true;
         });
+    });
+
+    wxRequest(
+      {
+        url: "/advertisingController/findAll",
+        data: {
+          type: 2
+        }
+      },
+      true
+    ).then(response => {
+      this.imgUrls = response.data;
+      setTimeout(() => {
+        const _this = this;
+        wx
+          .createSelectorQuery()
+          .select(".tab")
+          .boundingClientRect(function(rect) {
+            _this.scrollTop = rect.top;
+          })
+          .exec();
+      }, 300);
     });
   },
   onPageScroll: function(e) {
@@ -241,7 +268,7 @@ export default {
   },
   onPullDownRefresh: function(e) {
     this.tab.map(item => {
-      if(item.active) {
+      if (item.active) {
         item.pageNo = 1;
         store.getters
           .purchaseList({
@@ -250,7 +277,7 @@ export default {
           })
           .then(response => {
             item.data = response.data.list;
-            if(response.data.list.length > 0) {
+            if (response.data.list.length > 0) {
               item.pageNo++;
             }
             wx.stopPullDownRefresh();
@@ -260,7 +287,7 @@ export default {
   },
   onReachBottom: function() {
     this.tab.map(item => {
-      if(item.active) {
+      if (item.active) {
         store.getters
           .purchaseList({
             pageNo: item.pageNo,
@@ -268,7 +295,7 @@ export default {
           })
           .then(response => {
             item.data = [...item.data, ...response.data.list];
-            if(response.data.list.length > 0) {
+            if (response.data.list.length > 0) {
               item.pageNo++;
             }
           });
@@ -277,6 +304,14 @@ export default {
   },
   onLoad(options) {
     Object.assign(this.$data, this.$options.data());
+  },
+  onShareAppMessage({ target }) {
+    let id = target.dataset.id
+    let status = target.dataset.status
+    return {
+      title: '采购单详情',
+      path: `/pages/purchaseOrderDefault/main?type=offer&id=${id}&status=${status}`
+    }
   }
 };
 </script>
@@ -284,6 +319,8 @@ export default {
 <style scoped>
 .container {
   display: initial;
+  float:left;
+  width:100%;
 }
 
 .slide-image {
@@ -409,20 +446,26 @@ image {
 
 .share {
   border-top: 0.01rem solid #e9e9e9;
-  padding: 10px 0;
+  /* padding: 10px 0; */
   display: flex;
 }
 
 .share li {
   display: inline-block;
-  font-size: 12px;
-  height: 23px;
-  line-height: 23px;
   box-sizing: border-box;
-  text-align: center;
-  color: #3f8bf4;
+  
   flex: 1;
 }
+
+.share li button {
+  font-size: 12px;
+  text-align: center;
+  color: #3f8bf4;
+  background-color: transparent;
+  border: none;
+}
+
+.share li button::after{ border: none; }
 
 .share li:not(:last-child) {
   border-right: 1px solid #e9e9e9;
@@ -473,6 +516,7 @@ image {
 .fixed {
   position: fixed;
   top: 0;
+  z-index: 10;
 }
 
 .fixed + .tab-content {

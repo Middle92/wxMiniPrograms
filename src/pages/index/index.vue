@@ -7,7 +7,8 @@
         </swiper-item>
       </block>
     </swiper>
-    <button open-type="getUserInfo" @getuserinfo="bindGetUserInfo">{{btnText}}</button>
+    <button v-if="!type" open-type="getUserInfo" @getuserinfo="bindGetUserInfo">登录授权</button>
+    <button v-else @click="toHome">立即发布采购意向</button>
   </div>
 </template>
 
@@ -18,10 +19,10 @@ import wxRequest from "@/utils/request";
 async function setUserInfo(url) {
   wx.showToast({
     mask: true,
-    icon: 'loading',
-    title: '登陆中',
+    icon: "loading",
+    title: "登录中",
     duration: 99999
-  })
+  });
   // 获取userInfo
   new Promise((resolve, rejects) => {
     wx.getUserInfo({
@@ -37,6 +38,7 @@ async function setUserInfo(url) {
       return new Promise((resolve, rejects) => {
         wx.login({
           success(res) {
+            console.log(res)
             store.dispatch("setCode", res.code);
             resolve();
           }
@@ -47,54 +49,62 @@ async function setUserInfo(url) {
       // 请求授权注册登录
       return new Promise((resolve, rejects) => {
         let inviterId = wx.getLaunchOptionsSync().query.inviterId;
+        console.log(inviterId)
         let obj = {
           code: store.state.code,
           avatarUrl: store.state.userinfo.avatarUrl,
-          nickName: store.state.userinfo.nickName,
-        }
+          nickName: store.state.userinfo.nickName
+        };
         inviterId && (obj.inviterId = inviterId);
         wxRequest({
           url: "/buyerController/authorizeRegister",
           data: obj
-        }).then(response => {
-          // 获取登录获得的接口请求凭据
-          store.dispatch("setRequestKey", response.data.miniappToken);
-          store.dispatch("setBuyerId", response.data.buyerId);
-          resolve();
-        }).catch(e => {
-          wx.showToast({
-            mask: true,
-            icon: 'none',
-            title: '登陆失败',
-          })
         })
+          .then(response => {
+            // 获取登录获得的接口请求凭据
+            store.dispatch("setRequestKey", response.data.miniappToken);
+            store.dispatch("setBuyerId", response.data.buyerId);
+            resolve();
+          })
+          .catch(e => {
+            wx.showToast({
+              mask: true,
+              icon: "none",
+              title: "登录失败"
+            });
+          });
       });
     })
     .then(() => {
       // 获取用户信息
-      wxRequest({
-        url: "/buyerController/findInfo"
-      }, true).then(response => {
-        store.dispatch("setParsonal", response.data);
-        wx.showToast({
-          mask: true,
-          icon: 'success',
-          title: '登陆成功',
-          success() {
-            setTimeout(() => {
-              wx.redirectTo({
-                url: url
-              })
-            }, 1500)
-          }
+      wxRequest(
+        {
+          url: "/buyerController/findInfo"
+        },
+        true
+      )
+        .then(response => {
+          store.dispatch("setParsonal", response.data);
+          wx.showToast({
+            mask: true,
+            icon: "success",
+            title: "登录成功",
+            success() {
+              setTimeout(() => {
+                wx.redirectTo({
+                  url: url
+                });
+              }, 1500);
+            }
+          });
         })
-      }).catch(e => {
-        wx.showToast({
-          mask: true,
-          icon: 'none',
-          title: '登陆失败',
-        })
-      })
+        .catch(e => {
+          wx.showToast({
+            mask: true,
+            icon: "none",
+            title: "登录失败"
+          });
+        });
     });
 }
 
@@ -106,23 +116,25 @@ export default {
       autoplay: true,
       interval: 4000,
       duration: 500,
-      btnText: "登陆授权"
+      // btnText: "登录授权",
+      type: null
     };
   },
   beforeMount() {
-    let self = this;
-    wx.getSetting({
-      success(res) {
-        if (res.authSetting["scope.userInfo"]) {
-          // 用户已授权
-          self.btnText = "立即发布采购意向";
-          setUserInfo("/pages/home/main");
-        } else {
-          // 用户未授权
-          self.btnText = "登陆授权";
+    if (!this.type) {
+      wx.getSetting({
+        success(res) {
+          if (res.authSetting["scope.userInfo"]) {
+            // 用户已授权
+            // self.btnText = "立即发布采购意向";
+            setUserInfo("/pages/home/main");
+          } else {
+            // 用户未授权
+            // self.btnText = "登录授权";
+          }
         }
-      }
-    });
+      });
+    }
   },
   computed: {
     count() {
@@ -136,16 +148,27 @@ export default {
       } else {
         console.log("请升级微信");
       }
+    },
+    toHome() {
+      wx.navigateTo({
+        url: "/pages/home/main"
+      });
     }
   },
   mounted() {
     wxRequest({
-      url: '/advertisingController/findAll'
-    }).then((response) => {
-      this.imgUrls = response.data.map((item) => {
-        return store.state.baseUrl + item.imgUrl
-      })
-    })
+      url: "/advertisingController/findAll",
+      data: {
+        type: "1"
+      }
+    }).then(response => {
+      this.imgUrls = response.data.map(item => {
+        return store.state.baseUrl + item.imgUrl;
+      });
+    });
+  },
+  onLoad(query) {
+    this.type = query.type;
   }
 };
 </script>

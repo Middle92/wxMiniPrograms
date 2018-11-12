@@ -1,31 +1,34 @@
 <template>
-    <div class="container">
+    <div class="container" :style="{opacity: data ? 1 : 0}">
         <div class="title">
-            <h1>{{data.product}}</h1>
-            <p>{{buyDeadline}}丨 商机总收益<span>{{data.totalIncome}}</span>元</p>
+            <h1>{{data && data.product}}</h1>
+            <p>{{data && data.buyDeadline && buyDeadline}}丨 商机总收益<span>{{data && data.totalIncome}}</span>元</p>
             <img class="status" v-if="status == 3" src="/static/icon-13.png" mode="widthFix" style="width:50px;" alt="">
             <!-- <span class="status">{{statusText}}</span> -->
         </div>
         <div class="content">
             <ul>
                 <li class="user-info">
-                    <img :src="baseUrl + data.photo" alt="">
+                    <img :src="photoUrl" alt="">
                     <div>
-                        <p class="user-name">{{data.name}}</p>
-                        <p class="company">{{data.company}}</p>
+                        <p class="user-name">{{data && data.name}}</p>
+                        <p class="company">{{data && data.company}}</p>
                     </div>
                 </li>
                 <li class="product-info">
                     <div class="group">
                         <label for="">采购数量</label>
-                        <div class="group-content"><span>{{data.number}}</span>{{data.unit}}</div>
+                        <div class="group-content"><span>{{data && data.number}}</span>{{data && data.unit}}</div>
                     </div>
 
                     <div class="group">
                         <label for="">价格</label>
                         <div class="group-content">
-                            <span>{{data.price}}</span>元
-                            <img src="/static/icon-15.png"  mode="widthFix" alt="" style="width: 18px;"/>
+                            <span>{{data && data.price}}</span>元
+                            <div class="tip">
+                                <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/>
+                                <div class="tip-text" v-show="isTip">供应商查看时需支付的价格</div>
+                            </div>
                         </div>
                     </div>
 
@@ -33,8 +36,8 @@
                         <label for="">语音描述</label>
                         <div class="group-content">
                             <div class="voice-description" @click="playVoice">
-                                <img src="/static/icon-14.png" :class="{voice: voice}" mode="widthFix" alt="" style="width: 15px;">
-                                <span>{{data.duration/1000}}</span>
+                                <img src="/static/icon-14.png" :class="{voice: voice}" mode="widthFix" alt="" style="width: 20px;">
+                                <span>{{data && data.duration && data.duration/1000}}</span>
                             </div>
                         </div>
                     </div>
@@ -43,9 +46,9 @@
                     <div class="group">
                         <label for="">补充说明</label>
                         <div class="group-content">
-                            <p>{{data.explained}}</p>
+                            <p>{{data && data.explained}}</p>
                             <div class="images">
-                                <div class="image-item" v-for="(item, index) in data.imgList" :key="index">
+                                <div class="image-item" v-for="(item, index) in data && data.imgList" :key="index" :data-index="index" @click="previewImage">
                                     <div class="imgage-flex">
                                         <img mode="widthFix" :src="baseUrl + item" alt="">
                                     </div>
@@ -60,8 +63,8 @@
             <div class="group">
                 <label for=""></label>
                 <div class="group-content">
-                    阅读{{data.browseCount}}    报价{{data.offerCount}}
-                    <span>{{data.companyAddress}}</span>
+                    阅读{{data && data.browseCount}}    报价{{data && data.offerCount}}
+                    <span>{{data && data.companyAddress}}</span>
                 </div>
             </div>
             <div class="over"> ~ 全部加载完毕 ~ </div>
@@ -74,8 +77,14 @@
                     :key="index" 
                     @click="item.callback"
                     v-if="!(item.title == '邀请报价' && status == 3)">
-                    <img :src="item.icon" mode="widthFix" alt="" style="width: 15px;">
-                    {{item.title}}
+                    <button v-if="item.openType" :data-id="id" :data-status="status" open-type="share">
+                        <img :src="item.icon" mode="widthFix" alt="" style="width: 15px;">
+                        {{item.title}}
+                    </button>
+                    <button v-else>
+                        <img :src="item.icon" mode="widthFix" alt="" style="width: 15px;">
+                        {{item.title}}
+                    </button>
                 </li>
             </ul>
         </div>
@@ -87,10 +96,11 @@ const innerAudioContext = wx.createInnerAudioContext();
 import wxRequrest from '@/utils/request';
 import utils from '@/utils/index';
 import store from '@/stores';
+
 export default {
     data() {
         return {
-            data: {},
+            data: null,
             type: null,
             status: null,
             id: null,
@@ -98,9 +108,7 @@ export default {
                 {
                     title: "邀请报价",
                     icon: "/static/icon-7.png",
-                    callback: (e) => {
-                        this.type = 'offer';
-                    }
+                    openType: true,
                 },
                 {
                     title: "分享到朋友圈",
@@ -121,12 +129,15 @@ export default {
                     }
                 }
             ],
-            voice: false
+            voice: false,
+            isTip: false
         }
     },
     computed: {
         buyDeadline() {
-            return utils.formatTime(new Date(this.data.buyDeadline), '.')
+            if(this.data) {
+                return utils.formatTime(new Date(this.data.buyDeadline), '.')
+            }
         },
         statusText() {
             if(this.status == 0) {
@@ -141,13 +152,21 @@ export default {
         },
         baseUrl() {
             return store.state.baseUrl;
+        },
+        photoUrl() {
+            if(store.state.parsonal.photo.indexOf('https://wx.qlogo.cn') < 0) {
+                return this.baseUrl + store.state.parsonal.photo;
+            }
+            return store.state.parsonal.photo;
         }
     },
     methods: {
+        // 播放语音
         playVoice() {
-            innerAudioContext.src = this.data.audioFile;
+            innerAudioContext.src = this.baseUrl + this.data.audioFile;
             innerAudioContext.play();
         },
+        // 跳转小程序
         toMiniProgram() {
             wx.navigateToMiniProgram({
                 appId: 'wxbd33d7484b389dac',
@@ -158,20 +177,25 @@ export default {
                     console.log('fail')
                 }
             })
+        },
+        // 预览图片
+        previewImage(e) {
+            let index = e.currentTarget.dataset.index;
+            let imgList = this.data.imgList.map((item) => {
+                return this.baseUrl + item
+            })
+            wx.previewImage({
+                urls: imgList,
+                current: imgList[index]
+            })
         }
     },
-    mounted(options) {
-        innerAudioContext.onPlay(() => {
-            console.log('开始播放');
-            this.voice = true;
-        })
-
-        innerAudioContext.onEnded(() => {
-            console.log('音频自然播放至结束的事件')
-            this.voice = false;
-        })
-    },
     onLoad(query) {
+        Object.assign(this.$data, this.$options.data());
+        wx.showLoading({
+            title: '加载中',
+            mask: true
+        })
         this.type = query.type;
         this.status = query.status;
         this.id = query.id;
@@ -182,10 +206,28 @@ export default {
             }
         }, true).then(response => {
             this.data = response.data;
+            wx.hideLoading()
         })
+
+        innerAudioContext.onPlay(() => {
+            console.log('开始播放');
+            this.voice = true;
+        })
+
+        innerAudioContext.onEnded(() => {
+            console.log('音频自然播放至结束的事件')
+            this.voice = false;
+        })
+    },
+    onShareAppMessage({ target }) {
+        let id = target.dataset.id
+        let status = target.dataset.status
+        return {
+            title: '采购单详情',
+            path: `/pages/purchaseOrderDefault/main?type=offer&id=${id}&status=${status}`
+        }
     }
 }
-
 
 </script>
 
@@ -212,14 +254,20 @@ export default {
 }
 
 .footer ul li {
-    /* width: 33%; */
     flex: 1;
     box-sizing: border-box;
     display: inline-block;
     text-align: center;
+}
+
+.footer ul li button {
     font-size: 14px;
     color: #3f8bf4;
+    padding: 0;
+    background-color: #fff;
 }
+
+.footer ul li button::after{ border: none; }
 
 .footer ul li:not(:last-child) {
     border-right: 1px solid #e9e9e9
@@ -386,6 +434,28 @@ export default {
 .voice {
     animation:voice 1s infinite;
 }
+
+.tip {
+    position:relative;
+    display:inline-block;
+    white-space:nowrap;
+}
+
+.tip img{
+    vertical-align:middle;
+}
+
+.tip-text {
+    position:absolute;
+    top:0;
+    left:22px;
+    font-size:12px;
+    padding:5px;
+    background-color:#bbb;
+    color:#fff;
+    border-radius:3px;
+}
+
 @keyframes voice {
     0% {filter:brightness(90%);}
     50% {filter:brightness(100%);}

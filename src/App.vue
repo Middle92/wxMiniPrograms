@@ -72,4 +72,15 @@ button[disabled]:not([type]) {
 .blue {
   background-color: #5da0e8;
 }
+
+.iconfont {
+  display: inline;
+}
+
+.data-none {
+  font-size: 12px;
+  color: #666;
+  text-align:center;
+  margin-top: 20px;
+}
 </style>

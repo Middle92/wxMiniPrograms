@@ -6,8 +6,8 @@
                 <p v-if="parsonalData[item.key] && item.key != 'photo'">
                   {{parsonalData[item.key]}}
                 </p>
-                <img v-else-if="parsonalData[item.key] && item.key == 'photo'" :src="baseUrl + parsonalData[item.key]" alt="">
-                <p v-else>{{item.placeholder}}</p>
+                <img v-else-if="parsonalData[item.key] && item.key == 'photo'" :src="photoUrl" alt="">
+                <p v-else>{{item.placeholder}} <i class="icon iconfont icon-htbarrowright02"></i></p>
             </div>
         </div>
         <!-- <div class='submit-btns'>
@@ -27,81 +27,85 @@ export default {
         {
           title: "头像",
           key: "photo",
-          placeholder: ">",
+          placeholder: "",
           clickType: this.chooseImage
         },
         {
           title: "姓名",
           key: "name",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "邮箱",
           key: "mailbox",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "手机号码",
           key: "mobile",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
-          title: "申述",
+          title: "申诉",
           key: "statement",
-          placeholder: ">",
+          placeholder: "",
           clickType: this.statement
         },
         {
           title: "我的发布",
           key: "release",
-          placeholder: ">",
+          placeholder: "",
           clickType: this.release
         },
         {
           title: "微信昵称",
           key: "nickname",
-          placeholder: ">",
+          placeholder: "",
           clickType: function() {}
         },
         {
           title: "所在公司",
           key: "company",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "公司地址",
           key: "companyAddress",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "所在职位",
           key: "jobTitle",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "主营产品",
           key: "mainProduct",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
         },
         {
           title: "品牌",
           key: "trademark",
-          placeholder: "未填写 >",
+          placeholder: "未填写 ",
           clickType: this.editType1
+        },
+        {
+          title: "新手引导",
+          placeholder: "",
+          key: "guidance",
+          clickType: function() {
+            wx.navigateTo({
+              url: "/pages/index/main?type=1"
+            });
+          }
         }
-        // {
-        //   title: "新手引导",
-        //   placeholder: ">",
-        //   key: "guidance",
-        //   clickType: function() {}
-        // }
       ]
     };
   },
@@ -111,6 +115,12 @@ export default {
     },
     baseUrl() {
       return store.state.baseUrl;
+    },
+    photoUrl() {
+      if(store.state.parsonal.photo.indexOf('https://wx.qlogo.cn') < 0) {
+        return this.baseUrl + store.state.parsonal.photo;
+      }
+      return store.state.parsonal.photo;
     }
   },
   watch: {
@@ -144,15 +154,16 @@ export default {
             formData: {
               resourceType: "image"
             },
-            success(res) {
+            success:(res) => {
               const data = JSON.parse(res.data)
+              console.log(self.baseUrl + data.data)
               store.commit("editParsonal", { photo: data.data });
             }
           });
         }
       });
     },
-    // 申述
+    // 申诉
     statement() {
       wx.navigateTo({
         url: "/pages/statement/main"
@@ -216,6 +227,10 @@ export default {
 
 .mb20 {
   margin-bottom: 0.25rem;
+}
+
+.icon-htbarrowright02 {
+  font-size: 14px;
 }
 </style>
 

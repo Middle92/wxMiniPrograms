@@ -1,8 +1,8 @@
 <template>
     <div class="container">
         <ul class="statement">
-            <li class="statement-item" v-for="(item, index) in Data" :key="index">
-                <img :src="item.productImg" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+            <li class="statement-item" v-for="(item, index) in Data.data" :key="index">
+                <img :src="item.productImg ? baseUrl + item.productImg : '/static/logo.jpg'" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                 <div class="statement-default">
                     <p class="statement-title">{{item.product}}</p>
                     <div class="statement-info">
@@ -11,9 +11,13 @@
                     </div>
                 </div>
                 <div class="statement-btn">
-                    <button class="primary" :data-id="item.id" @click="statementDefault">申述</button>
+                    <button class="primary" :data-id="item.id" @click="statementDefault">申诉</button>
                 </div>
             </li>
+
+            <div v-if="Data.data.length <= 0" class="data-none">
+                <span>暂无数据</span>
+            </div>
         </ul>
     </div>
 </template>
@@ -25,7 +29,11 @@ import wxRequest from '@/utils/request';
 export default {
     data() {
         return {
-            Data: []
+            Data: {
+                pageNo: 1,
+                pageSize: 10,
+                data: []
+            }
         }
     },
     methods: {
@@ -35,20 +43,62 @@ export default {
             });
         }
     },
-    mounted() {
-        wxRequest({
-            url: '/feedbackController/list'
-        }, true).then(response => {
-            this.Data = response.data.list;
-            store.commit('setStatement', this.Data)
-        })
+    computed: {
+        baseUrl() {
+            return store.state.baseUrl;
+        }
     },
     onPullDownRefresh() {
+        this.Data.pageNo = 1;
+        let obj = {
+            pageNo: this.Data.pageNo,
+            pageSize: this.Data.pageSize,
+        }
+
         wxRequest({
-            url: '/feedbackController/list'
+            url: '/feedbackController/list',
+            data: obj
         }, true).then(response => {
-            this.Data = response.data.list;
-            store.commit('setStatement', this.Data)
+            if(response.data.list.length > 0) {
+                this.Data.pageNo++
+            }
+            this.Data.data = response.data.list;
+            store.commit('setStatement', this.Data.data)
+            wx.stopPullDownRefresh();
+        })
+    },
+    onReachBottom() {
+        let obj = {
+            pageNo: this.Data.pageNo,
+            pageSize: this.Data.pageSize,
+        }
+        wxRequest({
+            url: '/feedbackController/list',
+            data: obj
+        }, true).then((response) => {
+            if(response.data.list.length > 0) {
+                this.Data.pageNo++
+            }
+            this.Data.data = [...this.Data.data, ...response.data.list];
+        })
+    },
+    onShow() {
+        Object.assign(this.$data, this.$options.data());
+        let obj = {
+            pageNo: this.Data.pageNo,
+            pageSize: this.Data.pageSize,
+        }
+
+        wxRequest({
+            url: '/feedbackController/list',
+            data: obj
+        }, true).then(response => {
+            if(response.data.list.length > 0) {
+                this.Data.pageNo++
+            }
+            this.Data.data = response.data.list;
+            store.commit('setStatement', this.Data.data)
+            wx.stopPullDownRefresh();
         })
     }
 }
