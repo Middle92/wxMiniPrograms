@@ -22,12 +22,12 @@
                     </div>
 
                     <div class="group">
-                        <label for="">价格</label>
+                        <label for="">信息价格</label>
                         <div class="group-content">
                             <span>{{data && data.price}}</span>元
                             <div class="tip">
                                 <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/>
-                                <div class="tip-text" v-show="isTip">供应商查看时需支付的价格</div>
+                                <div class="tip-text" v-show="isTip">供应商查看时需支付的信息价格</div>
                             </div>
                         </div>
                     </div>
@@ -36,8 +36,8 @@
                         <label for="">语音描述</label>
                         <div class="group-content">
                             <div class="voice-description" @click="playVoice">
-                                <img src="/static/icon-14.png" :class="{voice: voice}" mode="widthFix" alt="" style="width: 20px;">
-                                <span>{{data && data.duration && data.duration/1000}}</span>
+                                <i class="iconfont icon-yuyin" :class="{voice:voice}"></i>
+                                <span>{{data && data.duration && duration}}s</span>
                             </div>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                     <span>{{data && data.companyAddress}}</span>
                 </div>
             </div>
-            <div class="over"> ~ 全部加载完毕 ~ </div>
+            <!-- <div class="over"> ~ 全部加载完毕 ~ </div> -->
         </div>
         <div class="footer">
             <button v-if="type == 'offer'" class="primary" @click="toMiniProgram">立即报价</button>
@@ -122,9 +122,9 @@ export default {
                 {
                     title: "查看供应商",
                     icon: "/static/icon-6.png",
-                    callback() {
+                    callback: () => {
                         wx.navigateTo({
-                            url: "/pages/excellentSupplier/main"
+                            url: "/pages/excellentSupplier/main?purchaseOrdersId=" + this.id
                         });
                     }
                 }
@@ -134,11 +134,18 @@ export default {
         }
     },
     computed: {
+        // 时间
         buyDeadline() {
             if(this.data) {
-                return utils.formatTime(new Date(this.data.buyDeadline), '.')
+                return this.data.buyDeadline;
             }
         },
+        duration() {
+            if(this.data) {
+                return Math.ceil(this.data.duration/1000);
+            }
+        },
+        // 状态文字
         statusText() {
             if(this.status == 0) {
                 return '审核中';
@@ -153,6 +160,7 @@ export default {
         baseUrl() {
             return store.state.baseUrl;
         },
+        // 判断头像
         photoUrl() {
             if(store.state.parsonal.photo.indexOf('https://wx.qlogo.cn') < 0) {
                 return this.baseUrl + store.state.parsonal.photo;
@@ -224,7 +232,7 @@ export default {
         let status = target.dataset.status
         return {
             title: '采购单详情',
-            path: `/pages/purchaseOrderDefault/main?type=offer&id=${id}&status=${status}`
+            path: '/pages/index/main?inviterId=' + store.state.buyerId + '&page=purchaseOrderDefault&pagetype=offer&id=' + id + '&status=' + status
         }
     }
 }
@@ -457,10 +465,26 @@ export default {
 }
 
 @keyframes voice {
-    0% {filter:brightness(90%);}
-    50% {filter:brightness(100%);}
-    100% {filter:brightness(90%);}
+    0% {
+        color: #fff;
+    }
+    50% {
+        color: #dddddd;
+    }
+    100% {
+        color: #fff;
+    }
 }
+
+.icon-yuyin {
+    margin-right: 5px;
+    color: #fff;
+}
+
+.icon-yuyin.voice {
+    animation:voice 1s infinite;
+}
+
 </style>
 
 

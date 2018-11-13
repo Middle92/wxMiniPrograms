@@ -1,5 +1,5 @@
 <template>
-    <div class="container" :style="{overflow: (visibilityPop || VerificationPop) ? 'hidden' : 'initial'}">
+    <div class="container" :style="{overflow: (visibilityPop || VerificationPop) ? 'hidden' : 'initial', opacity: isOpacity ? 1 : 0 }">
         <div class="form-group">
             <label for="">产品</label>
             <div class="flex-1">
@@ -31,8 +31,8 @@
         </div>
 
         <div class="form-group">
-            <label for="">价格</label>
-            <input class="flex-1" type="digit" v-model="productPrice" placeholder="请填写供应商查看时需付的价格">
+            <label for="">信息价格(元)</label>
+            <input class="flex-1" type="digit" v-model="productPrice" placeholder="请填写供应商查看时需付的信息价格" @blur="productPriceInput">
         </div>
 
         <div class="recorder-group">
@@ -53,13 +53,13 @@
                 <p v-if="!recorder">{{recorderStatus}}</p>
                 <div v-else>
                     <div class="recorder-box">
-                        {{recorderDuration/1000}}
+                        {{recorderDurationText}}s
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="supplement" v-show="supplement">
+        <div class="supplement" v-show="true">
             <div class="supplement-cont">
                 <p class="title">请输入补充说明</p>
                 <textarea :maxlength="supplementarySpecificationLength" v-model="supplementarySpecification" cols="30" rows="6"></textarea>
@@ -77,7 +77,7 @@
             </div>
         </div>
 
-        <p class="supplement-btn" @click="supplementFun">
+        <!-- <p class="supplement-btn" @click="supplementFun">
             补充说明
             <img 
                 mode="widthFix" 
@@ -85,7 +85,7 @@
                 alt="" 
                 style="width:10px;"
                 :style="!supplement && 'transform:rotate(180deg)'">
-        </p>
+        </p> -->
 
         <div class='submit-btns'>
             <button class='primary' @click="submit" :disabled="!company">确认并提交</button>
@@ -110,6 +110,7 @@
 const recorderManager = wx.getRecorderManager();
 const innerAudioContext = wx.createInnerAudioContext();
 import store from "@/stores";
+import utils from "@/utils";
 import wxRequest from "@/utils/request";
 import releasePopComponent from "@/components/releasePop";
 import releaseVerificationComponent from "@/components/releaseVerifications";
@@ -145,6 +146,7 @@ export default {
       recorder: null,
       // 录音时间
       recorderDuration: null,
+      recorderDurationText: null,
       // 展开补充说明
       supplement: false,
       // 补充说明
@@ -160,7 +162,9 @@ export default {
       // 弹窗展示
       visibilityPop: false,
       // 验证弹窗
-      VerificationPop: false
+      VerificationPop: false,
+      // 加载完成展示
+      isOpacity: false
     };
   },
   methods: {
@@ -265,7 +269,7 @@ export default {
             return "采购截至时间";
             break;
           case "price":
-            return "价格";
+            return "信息价格";
             break;
           case "audioFile" || "duration":
             return "语音";
@@ -278,6 +282,7 @@ export default {
             break;
         }
       };
+      console.log('recorderDuration', this.recorderDuration)
       let obj = {
         product: this.product, // 产品名称
         number: this.productNumber, // 数量
@@ -446,9 +451,17 @@ export default {
         urls: this.chooseImageArr,
         current: this.chooseImageArr[index]
       });
+    },
+    // productPriceInput
+    productPriceInput(event) {
+      this.productPrice = utils.fixed(Number(event.target.value), 1)
     }
   },
   mounted(options) {
+    wx.showLoading({
+      title: '加载中',
+      mask: true
+    })
     let timer;
     // 开始录音
     recorderManager.onStart(() => {
@@ -467,6 +480,7 @@ export default {
     recorderManager.onStop(res => {
       console.log("停止录音", res);
       this.recorderDuration = res.duration;
+      this.recorderDurationText = Math.ceil(res.duration/1000);
       this.recorder = res.tempFilePath;
       // 上传录音
       // let self = this;
@@ -503,6 +517,12 @@ export default {
       this.stopIcon = "/static/icon-19.png";
       this.playIcon = "/static/icon-21.png";
     });
+
+    setTimeout(() => {
+      this.isOpacity = true;
+      wx.hideLoading();
+    }, 300)
+    
   },
   watch: {
     product(value, oldValue) {

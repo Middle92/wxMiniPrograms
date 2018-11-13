@@ -38,7 +38,6 @@ async function setUserInfo(url) {
       return new Promise((resolve, rejects) => {
         wx.login({
           success(res) {
-            console.log(res)
             store.dispatch("setCode", res.code);
             resolve();
           }
@@ -48,8 +47,9 @@ async function setUserInfo(url) {
     .then(() => {
       // 请求授权注册登录
       return new Promise((resolve, rejects) => {
+        // 获取url参数
         let inviterId = wx.getLaunchOptionsSync().query.inviterId;
-        console.log(inviterId)
+
         let obj = {
           code: store.state.code,
           avatarUrl: store.state.userinfo.avatarUrl,
@@ -126,8 +126,13 @@ export default {
         success(res) {
           if (res.authSetting["scope.userInfo"]) {
             // 用户已授权
-            // self.btnText = "立即发布采购意向";
-            setUserInfo("/pages/home/main");
+            let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
+            console.log(wx.getLaunchOptionsSync().query)
+            if(page) {
+              setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
+            } else {
+              setUserInfo("/pages/home/main");
+            }
           } else {
             // 用户未授权
             // self.btnText = "登录授权";
@@ -144,7 +149,13 @@ export default {
   methods: {
     bindGetUserInfo(e) {
       if (wx.canIUse("button.open-type.getUserInfo")) {
-        setUserInfo("/pages/home/main");
+        let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
+        console.log(wx.getLaunchOptionsSync().query)
+        if(page) {
+          setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
+        } else {
+          setUserInfo("/pages/home/main");
+        }
       } else {
         console.log("请升级微信");
       }

@@ -8,9 +8,9 @@ import wxRequest from '@/utils/request';
 let baseUrl;
 if(process.env.NODE_ENV === 'development') {
     process.env.type === 'test' && (baseUrl = 'http://192.168.0.81:80/bcsj-miniapp')
-    process.env.type === 'dev' && (baseUrl = 'https://changying.messcat.com') //http://192.168.0.151:8082/bcsj-miniapp
+    process.env.type === 'dev' && (baseUrl = 'https://changying.messcat.com') //http://192.168.0.151:8082/bcsj-miniapp 
 } else {
-    baseUrl = 'https://changying.messcat.com'
+    baseUrl = 'https://baicai.youboy.com'
 }
 
 export default new Vuex.Store({

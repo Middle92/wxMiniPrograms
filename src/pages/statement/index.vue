@@ -11,7 +11,10 @@
                     </div>
                 </div>
                 <div class="statement-btn">
-                    <button class="primary" :data-id="item.id" @click="statementDefault">申诉</button>
+                    <button v-if="item.appealStatus == '0'" class="primary" :data-id="item.id" @click="statementDefault">申诉</button>
+                    <span class="appealStatus " v-if="item.appealStatus == '1'">申诉中</span>
+                    <span class="appealStatus success" v-if="item.appealStatus == '3'">申诉成功</span>
+                    <span class="appealStatus fail" v-if="item.appealStatus == '2'">申诉失败</span>
                 </div>
             </li>
 
@@ -138,6 +141,22 @@ export default {
 
 .statement-btn button {
     font-size: 14px;
+}
+
+.appealStatus {
+    font-size: 14px;
+}
+
+.success {
+    color: #ff9000;
+}
+
+.fail {
+    color: #69c44e;
+}
+
+.wait {
+    color: #888888;
 }
 </style>
 

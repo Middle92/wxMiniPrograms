@@ -248,6 +248,9 @@ export default {
         if(options.purchaseOrdersId) {
             this.purchaseOrdersId = obj.purchaseOrdersId = options.purchaseOrdersId
             url = '/supplierController/seekSupplier';
+            wx.setNavigationBarTitle({
+                title: '供应商'
+            });
         } else {
             url = '/supplierController/excellenceSupplier';
         }

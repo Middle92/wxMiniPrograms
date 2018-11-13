@@ -226,6 +226,10 @@ export default {
     }
   },
   mounted() {
+    wx.showLoading({
+        title: '加载中',
+        mask: true
+    })
     this.tab.map(item => {
       store.getters
         .purchaseList({
@@ -237,7 +241,6 @@ export default {
             item.pageNo++;
           }
           item.data = response.data.list;
-          this.isOpacity = true;
         });
     });
 
@@ -260,6 +263,8 @@ export default {
             _this.scrollTop = rect.top;
           })
           .exec();
+        this.isOpacity = true; 
+        wx.hideLoading();
       }, 300);
     });
   },
@@ -310,7 +315,7 @@ export default {
     let status = target.dataset.status
     return {
       title: '采购单详情',
-      path: `/pages/purchaseOrderDefault/main?type=offer&id=${id}&status=${status}`
+      path: '/pages/index/main?inviterId=' + store.state.buyerId + '&page=purchaseOrderDefault&pagetype=offer&id=' + id + '&status=' + status
     }
   }
 };
