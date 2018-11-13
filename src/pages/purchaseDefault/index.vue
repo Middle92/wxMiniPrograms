@@ -38,17 +38,7 @@
         <div class="recorder-group">
             <div class="recorder">
                 <div class="recorder-icons">
-                    <div class="recorder-icon">
-                        <img mode="widthFix" :src="stopIcon" alt="" style="width:28px;" @click="stopRecorder">
-                    </div>
-
-                    <div class="recorder-icon">
-                        <img mode="widthFix" :src="startIcon" alt="" style="width:28px;" @click="startRecorder">
-                    </div>
-                    
-                    <div class="recorder-icon">
-                        <img mode="widthFix" :src="playIcon" alt="" style="width:28px;" @click="playRecorder">
-                    </div>
+                    <i class="iconfont icon-icon_voice_b" :class="{'voice-start': voiceStatuc}" @click="voiceClick"></i>
                 </div>
                 <p v-if="!recorder">{{recorderStatus}}</p>
                 <div v-else>
@@ -59,7 +49,7 @@
             </div>
         </div>
 
-        <div class="supplement" v-show="true">
+        <div class="supplement">
             <div class="supplement-cont">
                 <p class="title">请输入补充说明</p>
                 <textarea :maxlength="supplementarySpecificationLength" v-model="supplementarySpecification" cols="30" rows="6"></textarea>
@@ -76,16 +66,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <p class="supplement-btn" @click="supplementFun">
-            补充说明
-            <img 
-                mode="widthFix" 
-                src="/static/icon-10.png" 
-                alt="" 
-                style="width:10px;"
-                :style="!supplement && 'transform:rotate(180deg)'">
-        </p> -->
 
         <div class='submit-btns'>
             <button class='primary' @click="submit" :disabled="!company">确认并提交</button>
@@ -132,14 +112,10 @@ export default {
       deadline: null,
       // 产品价格
       productPrice: null,
-      // 录音图标
-      startIcon: "/static/icon-17.png",
-      playIcon: "/static/icon-21.png",
-      stopIcon: "/static/icon-19.png",
+      // 录音图标状态
+      voiceStatuc: false,
       // 录音时间
       recorderTime: 90,
-      // 显示录音按钮
-      // showIcon: true,
       // 录音状态
       recorderStatus: "添加90秒语音描述",
       // 录音文件
@@ -147,8 +123,6 @@ export default {
       // 录音时间
       recorderDuration: null,
       recorderDurationText: null,
-      // 展开补充说明
-      supplement: false,
       // 补充说明
       supplementarySpecification: null,
       // 补充说明字符串长度
@@ -168,35 +142,44 @@ export default {
     };
   },
   methods: {
-    // 音频开始录音
-    startRecorder() {
-      const options = {
-        duration: 90000,
-        sampleRate: 44100,
-        numberOfChannels: 1,
-        encodeBitRate: 192000,
-        format: "aac",
-        frameSize: 50
-      };
-      recorderManager.start(options);
-    },
-    // 结束录音
-    stopRecorder() {
-      recorderManager.stop();
+    // 点击录音
+    voiceClick() {
+      this.voiceStatuc = !this.voiceStatuc;
+      if(this.voiceStatuc) {
+        const options = {
+          duration: 90000,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          encodeBitRate: 192000,
+          format: "aac",
+          frameSize: 50
+        };
+        recorderManager.start(options);
+        
+        recorderManager.onStart(() => {
+          console.log("开始录音");
+          this.recorderStatus = "录音中..."
+        })
+      } else {
+        recorderManager.stop();
+
+        recorderManager.onStop(res => {
+          console.log("停止录音", res);
+          this.recorderDuration = res.duration;
+          this.recorderDurationText = Math.ceil(res.duration/1000);
+          this.recorder = res.tempFilePath;
+        })
+      }
     },
     // 播放音频事件
     playRecorder() {
       if (this.recorder) {
-        this.startIcon = "/static/icon-17.png";
-        this.stopIcon = "/static/icon-19.png";
-        this.playIcon = "/static/icon-22.png";
+        // this.startIcon = "/static/icon-17.png";
+        // this.stopIcon = "/static/icon-19.png";
+        // this.playIcon = "/static/icon-22.png";
         innerAudioContext.src = this.recorder;
         innerAudioContext.play();
       }
-    },
-    // 补充说明事件
-    supplementFun() {
-      this.supplement = !this.supplement;
     },
     // 点击企业信息
     companyFun() {
@@ -224,24 +207,7 @@ export default {
       // 选择图片
       wx.chooseImage({
         success(res) {
-          // self.chooseImageArr = []
           self.chooseImageArr = res.tempFilePaths;
-          // 图片上传
-          // res.tempFilePaths.forEach(item => {
-          //   wx.uploadFile({
-          //     url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
-          //     filePath: item,
-          //     name: 'file',
-          //     header: {'buyer_token': store.state.requestKey},
-          //     formData: {
-          //       'resourceType': 'image'
-          //     },
-          //     success (res){
-          //       const data = JSON.parse(res.data)
-          //       self.chooseImageArr.push(data.data)
-          //     }
-          //   })
-          // });
         }
       });
     },
@@ -282,7 +248,6 @@ export default {
             break;
         }
       };
-      console.log('recorderDuration', this.recorderDuration)
       let obj = {
         product: this.product, // 产品名称
         number: this.productNumber, // 数量
@@ -452,71 +417,26 @@ export default {
         current: this.chooseImageArr[index]
       });
     },
-    // productPriceInput
+    // 价格保留一位数
     productPriceInput(event) {
       this.productPrice = utils.fixed(Number(event.target.value), 1)
     }
   },
-  mounted(options) {
+  beforeMount() {
     wx.showLoading({
       title: '加载中',
       mask: true
     })
-    let timer;
-    // 开始录音
-    recorderManager.onStart(() => {
-      console.log("开始录音");
-      this.startIcon = "/static/icon-18.png";
-      this.stopIcon = "/static/icon-19.png";
-      this.playIcon = "/static/icon-21.png";
-      this.recorder = null;
-      this.recorderStatus = "录音中..." + this.recorderTime;
-      clearInterval(timer);
-      timer = setInterval(() => {
-        this.recorderStatus = "录音中..." + (this.recorderTime -= 1);
-      }, 1000);
-    });
-    // 停止录音
-    recorderManager.onStop(res => {
-      console.log("停止录音", res);
-      this.recorderDuration = res.duration;
-      this.recorderDurationText = Math.ceil(res.duration/1000);
-      this.recorder = res.tempFilePath;
-      // 上传录音
-      // let self = this;
-      // wx.uploadFile({
-      //   url: store.state.baseUrl + '/buyer/fileController/upload', //仅为示例，非真实的接口地址
-      //   filePath: res.tempFilePath,
-      //   name: 'file',
-      //   header: {'buyer_token': store.state.requestKey},
-      //   formData: {
-      //     'resourceType': 'voice'
-      //   },
-      //   success (res){
-      //     const data = JSON.parse(res.data)
-      //     self.recorder = store.state.baseUrl + data.data;
-      //   }
-      // })
-      this.startIcon = "/static/icon-17.png";
-      this.stopIcon = "/static/icon-20.png";
-      this.playIcon = "/static/icon-21.png";
-      clearInterval(timer);
-      this.recorderTime = 90;
-    });
+  },
+  mounted(options) {
     // 监听音频停止事件
-    innerAudioContext.onStop(() => {
-      console.log("监听音频停止事件");
-      this.startIcon = "/static/icon-17.png";
-      this.stopIcon = "/static/icon-19.png";
-      this.playIcon = "/static/icon-21.png";
-    });
+    // innerAudioContext.onStop(() => {
+    //   console.log("监听音频停止事件");
+    // });
     // 监听音频自然播放至结束的事件
-    innerAudioContext.onEnded(() => {
-      console.log("监听音频自然播放至结束的事件");
-      this.startIcon = "/static/icon-17.png";
-      this.stopIcon = "/static/icon-19.png";
-      this.playIcon = "/static/icon-21.png";
-    });
+    // innerAudioContext.onEnded(() => {
+    //   console.log("监听音频自然播放至结束的事件");
+    // });
 
     setTimeout(() => {
       this.isOpacity = true;
@@ -525,11 +445,13 @@ export default {
     
   },
   watch: {
+    // 产品字符长度变化
     product(value, oldValue) {
       if (value) {
         this.productLengthValue = this.productLength - value.length;
       }
     },
+    // 补充说明字符长度变化
     supplementarySpecification(value, oldValue) {
       if (value) {
         this.supplementarySpecificationLengthValue =
@@ -538,12 +460,15 @@ export default {
     }
   },
   computed: {
+    // 个人信息
     parsonalData() {
       return store.state.parsonal;
     },
+    // 路劲
     baseUrl() {
       return store.state.baseUrl;
     },
+    // 最少开始时间
     startDate() {
       let date = new Date(Date.now());
       let Year = date.getFullYear();
@@ -569,6 +494,7 @@ export default {
   }
 };
 
+// 表情包排除
 function isEmojiCharacter(substring) {
   for (var i = 0; i < substring.length; i++) {
     var hs = substring.charCodeAt(i);
@@ -787,9 +713,9 @@ function isEmojiCharacter(substring) {
   color: #888888;
 }
 
-.recorder-icons {
+/* .recorder-icons {
   display: flex;
-}
+} */
 
 .recorder-icons.hide {
   display: none;
@@ -810,6 +736,29 @@ function isEmojiCharacter(substring) {
   line-height: 40px;
   color: #fff;
   padding: 0 10px;
+}
+
+.icon-icon_voice_b {
+  font-size: 36px;
+  color: #888888;
+  
+}
+
+.voice-start {
+  animation: voice 1.5s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes voice{
+  0% {
+    color: #2ac94f;
+  }
+  50% {
+    color: #888888;
+  }
+  100% {
+    color: #2ac94f;
+  }
 }
 </style>
 
