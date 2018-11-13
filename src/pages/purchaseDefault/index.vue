@@ -158,6 +158,7 @@ export default {
         
         recorderManager.onStart(() => {
           console.log("开始录音");
+          this.recorder = null;
           this.recorderStatus = "录音中..."
         })
       } else {
@@ -165,9 +166,9 @@ export default {
 
         recorderManager.onStop(res => {
           console.log("停止录音", res);
+          this.recorder = res.tempFilePath;
           this.recorderDuration = res.duration;
           this.recorderDurationText = Math.ceil(res.duration/1000);
-          this.recorder = res.tempFilePath;
         })
       }
     },
