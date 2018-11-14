@@ -161,7 +161,7 @@ export default {
             ctx.font = "normal normal normal 14px arial";
             ctx.setFillStyle("#888");
             ctx.fillText(
-              `${self.data.buyDeadline}丨 商机总收益${self.data.totalIncome}元`,
+              `${self.data.buyDeadline}丨 询盘总收益${self.data.totalIncome}元`,
               25,
               100
             );
@@ -204,9 +204,6 @@ export default {
 </script>
 
 <style scoped>
-/* canvas {
-    z-index:-1;
-} */
 .container {
   background: #f7f7f7;
 }
@@ -217,8 +214,6 @@ canvas {
   position: fixed;
   bottom: 25px;
   width: 80%;
-  /* margin-bottom: 20px; */
-  /* z-index:10; */
 }
 </style>
 

@@ -10,7 +10,7 @@
                 <li>方便快捷 高效简单</li>
             </ul>
         </div>
-        <p class="title">提现方式</p>
+        <p class="title">提现金额</p>
         <div class="money">
             <ul>
                 <li v-for="(item, index) in takeMoney" :key="index" @click="item.callback">

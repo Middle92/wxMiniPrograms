@@ -25,14 +25,19 @@
                     <div class="picker" :class="{placeholder: !deadline}">
                     {{deadline ? deadline : '请选择'}}
                     </div>
-                    <div v-if="!deadline" class="holder-right">></div>
+                    <div v-if="!deadline" class="holder-right">
+                      <i class="icon iconfont icon-htbarrowright02"></i>
+                    </div>
                 </picker>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="">信息价格(元)</label>
-            <input class="flex-1" type="digit" v-model="productPrice" placeholder="请填写供应商查看时需付的信息价格" @blur="productPriceInput">
+            <label for="">信息价格</label>
+            <div class="flex-1">
+              <input type="digit" v-model="productPrice" placeholder="请填写供应商查看时需付的信息价格" @blur="productPriceInput">
+              <span class="holder-right">元</span>
+            </div>
         </div>
 
         <div class="recorder-group">
@@ -41,9 +46,10 @@
                     <i class="iconfont icon-icon_voice_b" :class="{'voice-start': voiceStatuc}" @click="voiceClick"></i>
                 </div>
                 <p v-if="!recorder">{{recorderStatus}}</p>
-                <div v-else>
-                    <div class="recorder-box">
-                        {{recorderDurationText}}s
+                <div class="voice-content" v-else>
+                    <div class="recorder-box" :style="{width: recorderWidth}" @click="playRecorder">
+                      <i class="iconfont icon-yuyin" :class="{voice:voice}"></i>
+                        <span>{{recorderDurationText}}</span>
                     </div>
                 </div>
             </div>
@@ -51,8 +57,8 @@
 
         <div class="supplement">
             <div class="supplement-cont">
-                <p class="title">请输入补充说明</p>
-                <textarea :maxlength="supplementarySpecificationLength" v-model="supplementarySpecification" cols="30" rows="6"></textarea>
+                <!-- <p class="title"></p> -->
+                <textarea :style="{visibility: visibilityPop || VerificationPop ? 'hidden' : 'visible'}" placeholder="请输入补充说明" :maxlength="supplementarySpecificationLength" v-model="supplementarySpecification" cols="30" rows="6"></textarea>
                 <span class="holder-right">{{supplementarySpecificationLengthValue}}</span>
             </div>
             
@@ -68,7 +74,7 @@
         </div>
 
         <div class='submit-btns'>
-            <button class='primary' @click="submit" :disabled="!company">确认并提交</button>
+            <button class='primary' @click="submit" :disabled="!company">确认并发布</button>
         </div>
 
         <p class="company-info" @click="companyFun">
@@ -83,6 +89,7 @@
         <releasePopComponent :visibility="visibilityPop" @visibility="visibilityPopFun"></releasePopComponent>
 
         <releaseVerificationComponent :visibility="VerificationPop" @visibility="VerificationPopFun"></releaseVerificationComponent>
+        
     </div>
 </template>
 
@@ -114,6 +121,7 @@ export default {
       productPrice: null,
       // 录音图标状态
       voiceStatuc: false,
+      voice: false,
       // 录音时间
       recorderTime: 90,
       // 录音状态
@@ -138,14 +146,16 @@ export default {
       // 验证弹窗
       VerificationPop: false,
       // 加载完成展示
-      isOpacity: false
+      isOpacity: false,
+      // 语音宽度
+      recorderWidth: '0%'
     };
   },
   methods: {
     // 点击录音
     voiceClick() {
       this.voiceStatuc = !this.voiceStatuc;
-      if(this.voiceStatuc) {
+      if (this.voiceStatuc) {
         const options = {
           duration: 90000,
           sampleRate: 44100,
@@ -155,29 +165,13 @@ export default {
           frameSize: 50
         };
         recorderManager.start(options);
-        
-        recorderManager.onStart(() => {
-          console.log("开始录音");
-          this.recorder = null;
-          this.recorderStatus = "录音中..."
-        })
       } else {
         recorderManager.stop();
-
-        recorderManager.onStop(res => {
-          console.log("停止录音", res);
-          this.recorder = res.tempFilePath;
-          this.recorderDuration = res.duration;
-          this.recorderDurationText = Math.ceil(res.duration/1000);
-        })
       }
     },
     // 播放音频事件
     playRecorder() {
       if (this.recorder) {
-        // this.startIcon = "/static/icon-17.png";
-        // this.stopIcon = "/static/icon-19.png";
-        // this.playIcon = "/static/icon-22.png";
         innerAudioContext.src = this.recorder;
         innerAudioContext.play();
       }
@@ -386,19 +380,19 @@ export default {
             },
             true
           )
-          .then(response => {
-            let id = response.data.id;
-            wx.navigateTo({
-              url: `/pages/success/main?id=${id}&status=1`
+            .then(response => {
+              let id = response.data.id;
+              wx.navigateTo({
+                url: `/pages/success/main?id=${id}&status=1`
+              });
+            })
+            .catch(response => {
+              wx.showToast({
+                title: response.data.message,
+                icon: "none",
+                mask: true
+              });
             });
-          })
-          .catch(response => {
-            wx.showToast({
-              title: response.data.message,
-              icon: "none",
-              mask: true
-            });
-          });
           wx.hideLoading();
         })
         .catch(res => {
@@ -420,30 +414,31 @@ export default {
     },
     // 价格保留一位数
     productPriceInput(event) {
-      this.productPrice = utils.fixed(Number(event.target.value), 1)
+      this.productPrice = utils.fixed(Number(event.target.value), 1);
     }
   },
   beforeMount() {
     wx.showLoading({
-      title: '加载中',
+      title: "加载中",
       mask: true
-    })
+    });
   },
-  mounted(options) {
-    // 监听音频停止事件
-    // innerAudioContext.onStop(() => {
-    //   console.log("监听音频停止事件");
-    // });
-    // 监听音频自然播放至结束的事件
-    // innerAudioContext.onEnded(() => {
-    //   console.log("监听音频自然播放至结束的事件");
-    // });
+  mounted() {
+    let {
+      company,
+      companyAddress,
+      jobTitle,
+      mainProduct,
+      trademark
+    } = this.parsonalData;
 
+    if (company && companyAddress && jobTitle && mainProduct && trademark) {
+      this.company = !this.company;
+    }
     setTimeout(() => {
       this.isOpacity = true;
       wx.hideLoading();
-    }, 300)
-    
+    }, 300);
   },
   watch: {
     // 产品字符长度变化
@@ -465,7 +460,7 @@ export default {
     parsonalData() {
       return store.state.parsonal;
     },
-    // 路劲
+    // 路径
     baseUrl() {
       return store.state.baseUrl;
     },
@@ -477,7 +472,7 @@ export default {
         date.getMonth() + 1 < 10
           ? "0" + date.getMonth() + 1
           : date.getMonth() + 1;
-      let Day = date.getDate() + 1;
+      let Day = date.getDate();
       return Year + "-" + Month + "-" + Day;
     }
   },
@@ -486,9 +481,68 @@ export default {
     releaseVerificationComponent
   },
   onLoad(options) {
+    let timer = null;
+
     if (!options.init) {
       Object.assign(this.$data, this.$options.data());
     }
+
+    innerAudioContext.onPlay(() => {
+      console.log("开始播放");
+      this.voice = true;
+    });
+
+    innerAudioContext.onEnded(() => {
+      console.log("音频自然播放至结束的事件");
+      this.voice = false;
+    });
+
+    recorderManager.onStart(() => {
+      console.log('监听录音开始事件');
+      let second = 1;
+      this.recorder = null;
+      this.recorderStatus = sec_to_time(second);
+      timer = setInterval(() => {
+        second += 1;
+        this.recorderStatus = sec_to_time(second);
+      }, 1000)
+    })
+
+    recorderManager.onPause(() => {
+      console.log('监听录音暂停事件');
+      this.voiceStatuc = !this.voiceStatuc;
+      recorderManager.stop();
+    })
+
+    recorderManager.onStop((res) => {
+      console.log('监听录音结束事件');
+      console.log("停止录音", res);
+      clearInterval(timer);
+      this.voiceStatuc = false;
+      this.recorder = res.tempFilePath;
+      this.recorderDuration = res.duration;
+      this.recorderWidth = `${(res.duration/90000)*100}%`
+      this.recorderDurationText = sec_to_time(
+        Math.ceil(res.duration / 1000)
+      );
+    })
+    recorderManager.onFrameRecorded(({ frameBuffer, isLastFrame }) => {
+      console.log('监听已录制完指定帧大小的文件事件。如果设置了 frameSize，则会回调此事件。')
+      console.log(frameBuffer, isLastFrame)
+    })
+    recorderManager.onError(() => {
+      console.log('监听录音错误事件')
+    })
+    recorderManager.onInterruptionBegin(() => {
+      console.log('监听录音因为受到系统占用而被中断开始事件。以下场景会触发此事件：微信语音聊天、微信视频聊天。此事件触发后，录音会被暂停。pause 事件在此事件后触发')
+      this.voiceStatuc = !this.voiceStatuc;
+      recorderManager.stop();
+    })
+    recorderManager.onInterruptionEnd(() => {
+      console.log('监听录音中断结束事件。在收到 interruptionBegin 事件之后，小程序内所有录音会暂停，收到此事件之后才可再次录音成功。')
+      this.voiceStatuc = !this.voiceStatuc;
+      recorderManager.stop();
+    })
   },
   onUnload() {
     recorderManager.stop();
@@ -536,6 +590,25 @@ function isEmojiCharacter(substring) {
     }
   }
 }
+// 语音时间
+var sec_to_time = function(s) {
+  var t;
+  if (s > -1) {
+    var hour = Math.floor(s / 3600);
+    var min = Math.floor(s / 60) % 60;
+    var sec = s % 60;
+
+    if (min < 10) {
+      t = "0";
+    }
+    t += min + ":";
+    if (sec < 10) {
+      t += "0";
+    }
+    t += sec.toFixed();
+  }
+  return t;
+};
 </script>
 
 <style scoped>
@@ -608,11 +681,11 @@ function isEmojiCharacter(substring) {
 
 .supplement-cont {
   width: 100%;
-  padding: 10px 40px 10px 10px;
+  padding: 10px;
   box-sizing: border-box;
   position: relative;
-  /* margin-bottom: 10px; */
   background-color: #ffffff;
+  text-align: right;
 }
 
 .supplement-cont .title {
@@ -624,16 +697,13 @@ function isEmojiCharacter(substring) {
   font-size: 14px;
   width: 100%;
   height: 100px;
-  border: 1px solid #ddd;
   padding: 5px;
   box-sizing: border-box;
   border-radius: 5px;
+  text-align: left;
 }
 
 .supplement-cont .holder-right {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
   font-size: 14px;
   color: #888888;
 }
@@ -727,30 +797,54 @@ function isEmojiCharacter(substring) {
 }
 
 .recorder-box {
-  margin-top: 10px;
-  width: 80%;
+  min-width:60px;
   margin: auto;
+  margin-top: 10px;
   border-radius: 5px;
   background-color: #1aac19;
   text-align: left;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   color: #fff;
-  padding: 0 10px;
+  padding-left: 10px;
+  font-size: 10px;
+  display:inline-block;
+  box-sizing: border-box;
 }
 
 .icon-icon_voice_b {
-  font-size: 36px;
+  font-size: 30px;
   color: #888888;
-  
 }
 
 .voice-start {
-  animation: voice 1.5s;
+  animation: recorder 1.5s;
   animation-iteration-count: infinite;
 }
 
-@keyframes voice{
+.icon-yuyin {
+  margin-right: 5px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.icon-yuyin.voice {
+  animation: voice 1s infinite;
+}
+
+.voice-content {
+  padding: 0px 20px;
+}
+
+cover-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes recorder {
   0% {
     color: #2ac94f;
   }
@@ -759,6 +853,18 @@ function isEmojiCharacter(substring) {
   }
   100% {
     color: #2ac94f;
+  }
+}
+
+@keyframes voice {
+  0% {
+    color: #fff;
+  }
+  50% {
+    color: #dddddd;
+  }
+  100% {
+    color: #fff;
   }
 }
 </style>

@@ -3,10 +3,10 @@
         <div class="export-element">
             <h1>为了帮你匹配到更精准的供应商请完善你的企业信息</h1>
             <div class="export-btns">
-                <div class="btn">
+                <div class="btn left">
                     <button @click="$emit('visibility', false)">取消</button>
                 </div>
-                <div class="btn">
+                <div class="btn right">
                     <button class="primary" @click="OK">确定</button>
                 </div>
             </div>
@@ -49,11 +49,11 @@ export default {
 }
 
 .export-element {
-  width: 250px;
+  width: 210px;
   margin: auto;
   background-color: #fff;
   border-radius: 6px;
-  padding: 15px;
+  padding: 40px;
 }
 
 .export-element h1 {
@@ -103,11 +103,19 @@ export default {
 .export-btns .btn button {
   display: inline-block;
   font-size: 15px;
-  width: 50%;
+  width: 100%;
 }
 
 .hide {
   display: none;
+}
+
+.left {
+  padding-right: 15px;
+}
+
+.right {
+  padding-left: 15px;
 }
 </style>
 

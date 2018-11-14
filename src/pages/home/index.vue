@@ -1,5 +1,5 @@
 <template>
-    <div class='container' :style="{opacity: isOpacity ? 1 : 0}">
+    <div class='container' :style="{opacity: isOpacity ? 1 : 0}" @touchstart="touchstart" @touchmove="touchmove">
         <!-- 顶部广告 -->
         <swiper v-if="imgUrls && imgUrls.length > 1">
             <block v-for="(item, index) in imgUrls" :key="index">
@@ -70,9 +70,10 @@
         </div>
         <!-- 发布采购单icon -->
         <div>
-            <div class='plusIcon' @click="release">
-                <image src='/static/icon01.png'/>
-            </div>
+          <div class='plusIcon' :style="{bottom: plusicon}" @click="release">
+            <i class="iconfont icon-plus"></i>
+            <span class="plus-title" v-show="plustitle">有奖发布</span>
+          </div>
         </div>
     </div>
 </template>
@@ -174,7 +175,9 @@ export default {
       ],
       // 滚动tab 固定顶部
       scrollTop: null,
-      fixedTab: false
+      fixedTab: false,
+      plusicon: '20px',
+      plustitle: true
     };
   },
   computed: {
@@ -223,6 +226,19 @@ export default {
       wx.navigateTo({
         url: `/pages/purchaseOrderDefault/main?type=${type}&id=${id}&status=${status}`
       });
+    },
+    touchstart(e) {
+      console.log(e);
+      this.touchstartval = e.clientY;
+    },
+    touchmove(e) {
+      if(e.clientY > this.touchstartval) {
+        console.log('down')
+        this.plusicon = '20px';
+      } else {
+        console.log('up')
+        this.plusicon = '-45px';
+      }
     }
   },
   mounted() {
@@ -309,6 +325,10 @@ export default {
   },
   onLoad(options) {
     Object.assign(this.$data, this.$options.data());
+
+    setTimeout(() => {
+      this.plustitle = false;
+    }, 3000)
   },
   onShareAppMessage({ target }) {
     let id = target.dataset.id
@@ -326,6 +346,8 @@ export default {
   display: initial;
   float:left;
   width:100%;
+  height: auto;
+  font-size: 0;
 }
 
 .slide-image {
@@ -340,6 +362,7 @@ image {
   font-size: 0.25rem;
   width: 100%;
   display: flex;
+  background-color: #f5f5f5;
 }
 
 .icons li {
@@ -491,12 +514,39 @@ image {
   display: flex;
   width: 1rem;
   height: 1rem;
-  background-color: #1481fa;
+  /* background-color: #1481fa; */
+  background: linear-gradient(#6cb8ec, #5695e6); /* 标准的语法 */
   border-radius: 50%;
   align-items: center;
   justify-content: center;
   left: 50%;
   margin-left: -0.5rem;
+  transition: all .5s;
+}
+
+.plusIcon .plus-title {
+  width: 80px;
+  height: 35px;
+  line-height: 35px;
+  text-align: center;
+  font-size: 14px;
+  color: #ffffff;
+  background-color: #2a70d4;
+  position: absolute;
+  top: -45px;
+  border-radius: 4px;
+}
+
+.plusIcon .plus-title::after {
+  content: " ";
+  position: absolute;
+  border: 6px solid #2a70d4;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -6px;
 }
 
 .modle {
@@ -526,6 +576,11 @@ image {
 
 .fixed + .tab-content {
   margin-top: 50px;
+}
+
+.icon-plus {
+  font-size: 18px;
+  color: #ffffff;
 }
 </style>
 

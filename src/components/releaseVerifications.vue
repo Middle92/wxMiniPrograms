@@ -5,21 +5,21 @@
             <div class="form-group">
                 <label for="">姓名</label>
                 <div class="flex-1">
-                    <input type="text" v-model="name" placeholder="请填写姓名">
+                    <input type="text" v-model="name" placeholder-class="placeholder-class" placeholder="请填写姓名">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="">手机号码</label>
                 <div class="flex-1">
-                    <input type="digit" v-model="mobile" placeholder="请输入11位手机号码">
+                    <input type="digit" v-model="mobile" placeholder-class="placeholder-class" placeholder="请输入11位手机号码">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="">验证码</label>
                 <div class="flex-1">
-                    <input type="digit" v-model="codeValue" placeholder="请输入6位数验证码">
+                    <input type="digit" v-model="codeValue" placeholder-class="placeholder-class" placeholder="请输入6位数验证码">
                 </div>
                 <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
             </div>

@@ -83,4 +83,9 @@ button[disabled]:not([type]) {
   text-align:center;
   margin-top: 20px;
 }
+
+.placeholder-class {
+  color: #bbbbbb;
+  font-size: 13px;
+}
 </style>

@@ -4,7 +4,7 @@
             <h1>我们会将供应商信息发到你的邮箱</h1>
             <div class="export-content">
                 <label for="">邮箱</label>
-                <input type="text" v-model="mail" placeholder="请输入正确邮箱地址">
+                <input type="text" v-model="mail" placeholder-class="placeholder-class" placeholder="请输入正确邮箱地址">
             </div>
             <div class="export-btns">
                 <div class="btn">

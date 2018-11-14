@@ -25,5 +25,8 @@
     "navigationBarBackgroundColor": "#1480fa",
     "navigationBarTitleText": "百采号",
     "navigationBarTextStyle": "white"
-  }
+  },
+  "navigateToMiniProgramAppIdList": [
+    "wxbd33d7484b389dac"
+  ]
 }

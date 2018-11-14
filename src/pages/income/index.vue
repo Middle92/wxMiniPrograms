@@ -97,29 +97,6 @@ export default {
     }
   },
   mounted() {
-    wxRequest(
-      {
-        url: "/journalAccountController/list",
-        data: {
-          pageNo: this.incomeList.pageNo,
-          pageSize: this.incomeList.pageSize
-        }
-      },
-      true
-    ).then(response => {
-      this.incomeList.list = response.data.list;
-      if (response.data.list.length > 0) {
-        this.incomeList.pageNo++;
-      }
-      wxRequest(
-        {
-          url: "/buyerController/findInfo",
-        },
-        true
-      ).then(response => {
-        stores.dispatch("setParsonal", response.data);
-      });
-    });
   },
   onShareAppMessage() {
     return {

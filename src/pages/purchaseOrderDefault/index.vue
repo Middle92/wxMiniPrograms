@@ -2,7 +2,7 @@
     <div class="container" :style="{opacity: data ? 1 : 0}">
         <div class="title">
             <h1>{{data && data.product}}</h1>
-            <p>{{data && data.buyDeadline && buyDeadline}}丨 商机总收益<span>{{data && data.totalIncome}}</span>元</p>
+            <p>{{data && data.buyDeadline && buyDeadline}}丨 询盘总收益<span>{{data && data.totalIncome}}</span>元</p>
             <img class="status" v-if="status == 3" src="/static/icon-13.png" mode="widthFix" style="width:50px;" alt="">
             <!-- <span class="status">{{statusText}}</span> -->
         </div>
@@ -23,10 +23,11 @@
 
                     <div class="group">
                         <label for="">信息价格</label>
-                        <div class="group-content">
+                        <div class="group-content flex">
                             <span>{{data && data.price}}</span>元
                             <div class="tip">
-                                <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/>
+                                <!-- <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/> -->
+                                <i class="iconfont icon-wenhao" @click="isTip = !isTip"></i>
                                 <div class="tip-text" v-show="isTip">供应商查看时需支付的信息价格</div>
                             </div>
                         </div>
@@ -35,9 +36,9 @@
                     <div class="group">
                         <label for="">语音描述</label>
                         <div class="group-content">
-                            <div class="voice-description" @click="playVoice">
+                            <div class="voice-description" :style="{width: recorderWidth}" @click="playVoice">
                                 <i class="iconfont icon-yuyin" :class="{voice:voice}"></i>
-                                <span>{{data && data.duration && duration}}s</span>
+                                <span>{{data && data.duration && duration}}</span>
                             </div>
                         </div>
                     </div>
@@ -45,7 +46,7 @@
                 <li class="supplement">
                     <div class="group">
                         <label for="">补充说明</label>
-                        <div class="group-content">
+                        <div class="group-content block">
                             <p>{{data && data.explained}}</p>
                             <div class="images">
                                 <div class="image-item" v-for="(item, index) in data && data.imgList" :key="index" :data-index="index" @click="previewImage">
@@ -63,8 +64,11 @@
             <div class="group">
                 <label for=""></label>
                 <div class="group-content">
-                    阅读{{data && data.browseCount}}    报价{{data && data.offerCount}}
-                    <span>{{data && data.companyAddress}}</span>
+                    阅读{{data && data.browseCount}}&nbsp;&nbsp;&nbsp;&nbsp;报价{{data && data.offerCount}}
+                    <span>
+                        <i class="iconfont icon-dingweiweizhi"></i>
+                        {{data && data.companyAddress}}
+                    </span>
                 </div>
             </div>
             <!-- <div class="over"> ~ 全部加载完毕 ~ </div> -->
@@ -130,7 +134,8 @@ export default {
                 }
             ],
             voice: false,
-            isTip: false
+            isTip: false,
+            recorderWidth: '0%'
         }
     },
     computed: {
@@ -142,7 +147,8 @@ export default {
         },
         duration() {
             if(this.data) {
-                return Math.ceil(this.data.duration/1000);
+                this.recorderWidth = `${(this.data.duration/90000)*100}%`
+                return sec_to_time(Math.ceil(this.data.duration/1000));
             }
         },
         // 状态文字
@@ -237,6 +243,20 @@ export default {
     }
 }
 
+var sec_to_time = function(s) {
+    var t;
+    if(s > -1){
+        var hour = Math.floor(s/3600);
+        var min = Math.floor(s/60) % 60;
+        var sec = s % 60;
+
+        if(min < 10){t = "0";}
+        t += min + ":";
+        if(sec < 10){t += "0";}
+        t += sec.toFixed();
+    }
+    return t;
+}
 </script>
 
 <style scoped>
@@ -345,8 +365,8 @@ export default {
 .group .group-content {
     color: #888888;
     font-size: 16px;
-    /* line-height: 50px; */
     flex: 1;
+    align-items:center;
 }
 
 .group-content span {
@@ -381,26 +401,29 @@ export default {
 .voice-description {
     background-color: #2ac94f;
     height: 30px;
-    width: 40%;
-    border-radius: 6px;
+    min-width: 60px;
+    border-radius: 3px;
     position: relative;
     display:flex;
     align-items:center;
     padding-left:10px;
+    margin-left: 8px;
+    font-size: 10px;
+    box-sizing:border-box;
 }
 
-/* .voice-description::before {
+.voice-description::before {
     content: '';
     display: inline-block;
     position: absolute;
-    border: 10px solid #2ac94f;
+    border: 8px solid #2ac94f;
     top: 50%;
-    left: -19px;
-    margin-top: -10px;
+    left: -14px;
+    margin-top: -8px;
     border-top-color: transparent;
     border-left-color: transparent;
     border-bottom-color: transparent;
-} */
+}
 
 .voice-description img {
     margin-right:10px;
@@ -447,6 +470,7 @@ export default {
     position:relative;
     display:inline-block;
     white-space:nowrap;
+    margin-left: 5px;
 }
 
 .tip img{
@@ -455,13 +479,59 @@ export default {
 
 .tip-text {
     position:absolute;
-    top:0;
+    top: 50%;
     left:22px;
-    font-size:12px;
-    padding:5px;
+    font-size:11px;
+    line-height: 20px;
+    height: 20px;
+    padding: 0px 5px;
     background-color:#bbb;
     color:#fff;
     border-radius:3px;
+    margin-top: -10px;
+}
+
+.tip-text::before {
+    content: " ";
+    position: absolute;
+    border: 5px solid #bbb;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    left: -8px;
+    top: 50%;
+    margin-top: -4.5px;
+}
+
+.icon-yuyin {
+    margin-right: 5px;
+    color: #fff;
+    font-size: 12px;
+}
+
+.icon-yuyin.voice {
+    animation:voice 1s infinite;
+}
+
+.icon-wenhao {
+    width: 15px;
+    background-color:#bbb;
+    color:#fff;
+    font-size: 12px;
+    display:block;
+    height: 15px;
+    line-height: 15px;
+    text-align:center;
+    border-radius:50%;
+
+}
+
+.block {
+    display: block !important;
+}
+
+.flex {
+    display: flex;
 }
 
 @keyframes voice {
@@ -475,16 +545,6 @@ export default {
         color: #fff;
     }
 }
-
-.icon-yuyin {
-    margin-right: 5px;
-    color: #fff;
-}
-
-.icon-yuyin.voice {
-    animation:voice 1s infinite;
-}
-
 </style>
 
 

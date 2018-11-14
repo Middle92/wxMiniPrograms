@@ -1,11 +1,11 @@
 <template>
     <div class="container">
         <div class="content">
-            <input v-if="nagitationKey == 'mobile'" type="digit" v-model="value" :placeholder="'请输入'+navigationTitle">
-            <input v-else v-model="value" :placeholder="'请输入'+navigationTitle">
+            <input v-if="nagitationKey == 'mobile'" type="digit" v-model="value" placeholder-class="placeholder-class" :placeholder="'请输入'+navigationTitle">
+            <input v-else v-model="value" placeholder-class="placeholder-class" :placeholder="'请输入'+navigationTitle">
         </div>
         <div v-if="nagitationKey == 'mobile'" class="code">
-            <input type="digit" v-model="code" placeholder="请输入验证码">
+            <input type="digit" v-model="code" placeholder-class="placeholder-class" placeholder="请输入验证码">
             <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
         </div>
         <div class='submit-btns'>
