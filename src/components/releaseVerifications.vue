@@ -16,20 +16,20 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label for="">验证码</label>
                 <div class="flex-1">
                     <input type="digit" v-model="codeValue" placeholder-class="placeholder-class" placeholder="请输入6位数验证码">
                 </div>
                 <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
-            </div>
+            </div> -->
 
             <div class="export-btns">
                 <div class="btn">
                     <button @click="$emit('visibility', false)">取消</button>
                 </div>
                 <div class="btn">
-                    <button class="primary" @click="OK" :disabled="!codeValue">确定</button>
+                    <button class="primary" @click="OK">确定</button> <!--  :disabled="!codeValue" -->
                 </div>
             </div>
         </div>
@@ -59,7 +59,58 @@ export default {
   },
   methods: {
     // 获取验证码
-    getCode() {
+    // getCode() {
+    //   let self = this;
+    //   if(!(/^1(3|4|5|7|8)\d{9}$/.test(self.mobile))){ 
+    //     wx.showToast({
+    //       icon: 'none',
+    //       title: '电话号码不正确'
+    //     })
+    //   } else if(!self.name || self.name.trim() == '') {
+    //     wx.showToast({
+    //       icon: 'none',
+    //       title: '填写姓名'
+    //     })
+    //   }else {
+    //     // 验证码按钮disabled
+    //     this.getCodeBtn = false;
+    //     this.btnText = this.btnTextTime;
+    //     // this.getCodeValue = response.data;
+    //     let timer;
+    //     timer = setInterval(() => {
+    //       this.btnText = this.btnTextTime -= 1;
+    //       if(this.btnTextTime <= 0 || !this.visibility) {
+    //         clearInterval(timer)
+    //         this.btnText = '获取验证码';
+    //         this.btnTextTime = 60;
+    //         this.getCodeBtn = true;
+    //         // this.getCodeValue = null;
+    //         return false;
+    //       }
+    //     }, 1000)
+    //     wxRequest({
+    //       url: '/buyerController/getAuthCode',
+    //       data: {
+    //         mobile: self.mobile
+    //       }
+    //     }, true)
+    //       .then((response) => {
+    //         wx.showToast({
+    //           icon: 'none',
+    //           title: response.message
+    //         })
+    //       })
+    //       .catch((e) => {
+    //         console.log(e)
+    //         wx.showToast({
+    //           icon: 'none',
+    //           title: e.data.message
+    //         })
+    //       })
+    //   }
+    // }, 
+    // 确定按钮
+    OK() {
       let self = this;
       if(!(/^1(3|4|5|7|8)\d{9}$/.test(self.mobile))){ 
         wx.showToast({
@@ -71,47 +122,7 @@ export default {
           icon: 'none',
           title: '填写姓名'
         })
-      }else {
-        // 验证码按钮disabled
-        this.getCodeBtn = false;
-        this.btnText = this.btnTextTime;
-        // this.getCodeValue = response.data;
-        let timer;
-        timer = setInterval(() => {
-          this.btnText = this.btnTextTime -= 1;
-          if(this.btnTextTime <= 0 || !this.visibility) {
-            clearInterval(timer)
-            this.btnText = '获取验证码';
-            this.btnTextTime = 60;
-            this.getCodeBtn = true;
-            // this.getCodeValue = null;
-            return false;
-          }
-        }, 1000)
-        wxRequest({
-          url: '/buyerController/getAuthCode',
-          data: {
-            mobile: self.mobile
-          }
-        }, true)
-          .then((response) => {
-            wx.showToast({
-              icon: 'none',
-              title: response.message
-            })
-          })
-          .catch((e) => {
-            console.log(e)
-            wx.showToast({
-              icon: 'none',
-              title: e.data.message
-            })
-          })
-      }
-    }, 
-    // 确定按钮
-    OK() {
-      let self = this;
+      } else {
         wxRequest({
           url: '/buyerController/bindingMobile',
           method: 'POST',
@@ -140,6 +151,7 @@ export default {
             title: e.data.message
           })
         })
+      }
     }
   },
   watch: {

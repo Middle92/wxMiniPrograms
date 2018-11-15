@@ -127,7 +127,6 @@ export default {
           if (res.authSetting["scope.userInfo"]) {
             // 用户已授权
             let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
-            console.log(wx.getLaunchOptionsSync().query)
             if(page) {
               setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
             } else {
@@ -150,7 +149,6 @@ export default {
     bindGetUserInfo(e) {
       if (wx.canIUse("button.open-type.getUserInfo")) {
         let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
-        console.log(wx.getLaunchOptionsSync().query)
         if(page) {
           setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
         } else {

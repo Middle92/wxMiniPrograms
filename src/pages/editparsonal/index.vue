@@ -4,10 +4,10 @@
             <input v-if="nagitationKey == 'mobile'" type="digit" v-model="value" placeholder-class="placeholder-class" :placeholder="'请输入'+navigationTitle">
             <input v-else v-model="value" placeholder-class="placeholder-class" :placeholder="'请输入'+navigationTitle">
         </div>
-        <div v-if="nagitationKey == 'mobile'" class="code">
+        <!-- <div v-if="nagitationKey == 'mobile'" class="code">
             <input type="digit" v-model="code" placeholder-class="placeholder-class" placeholder="请输入验证码">
             <button @click="getCode" :disabled="!getCodeBtn">{{btnText}}</button>
-        </div>
+        </div> -->
         <div class='submit-btns'>
             <button class='primary' @click="editData">确定</button>
         </div>

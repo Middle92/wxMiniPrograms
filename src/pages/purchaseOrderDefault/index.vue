@@ -28,7 +28,7 @@
                             <div class="tip">
                                 <!-- <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/> -->
                                 <i class="iconfont icon-wenhao" @click="isTip = !isTip"></i>
-                                <div class="tip-text" v-show="isTip">供应商查看时需支付的信息价格</div>
+                                <div class="tip-text" v-show="isTip">供应商获取联系方式需支付的价格</div>
                             </div>
                         </div>
                     </div>

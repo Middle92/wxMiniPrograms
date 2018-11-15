@@ -156,7 +156,6 @@ export default {
             },
             success:(res) => {
               const data = JSON.parse(res.data)
-              console.log(self.baseUrl + data.data)
               store.commit("editParsonal", { photo: data.data });
             }
           });
@@ -227,10 +226,6 @@ export default {
 
 .mb20 {
   margin-bottom: 0.25rem;
-}
-
-.icon-htbarrowright02 {
-  font-size: 14px;
 }
 </style>
 

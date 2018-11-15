@@ -88,4 +88,8 @@ button[disabled]:not([type]) {
   color: #bbbbbb;
   font-size: 13px;
 }
+
+.icon-htbarrowright02 {
+  font-size: 12px !important;
+}
 </style>

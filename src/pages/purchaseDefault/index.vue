@@ -3,7 +3,7 @@
         <div class="form-group">
             <label for="">产品</label>
             <div class="flex-1">
-                <input type="text" v-model="product" :maxlength="productLength" placeholder="产品名称、规格或型号">
+                <input type="text" v-model="product" :maxlength="productLength" placeholder="请输入名称、规格或型号">
                 <span class="holder-right">{{productLengthValue}}</span>
             </div>
         </div>
@@ -19,11 +19,11 @@
         </div>
 
         <div class="form-group">
-            <label for="">采购截至时间</label>
+            <label for="">截止时间</label>
             <div class="flex-1">
                 <picker mode="date" :value="deadline" :start="startDate" @change="bindDateChange">
                     <div class="picker" :class="{placeholder: !deadline}">
-                    {{deadline ? deadline : '请选择'}}
+                    {{deadline ? deadline : '请选择采购截止时间'}}
                     </div>
                     <div v-if="!deadline" class="holder-right">
                       <i class="icon iconfont icon-htbarrowright02"></i>
@@ -35,7 +35,7 @@
         <div class="form-group">
             <label for="">信息价格</label>
             <div class="flex-1">
-              <input type="digit" v-model="productPrice" placeholder="请填写供应商查看时需付的信息价格" @blur="productPriceInput">
+              <input type="digit" v-model="productPrice" placeholder="请输入查看联系方式需付的价格" @blur="productPriceInput">
               <span class="holder-right">元</span>
             </div>
         </div>
@@ -526,10 +526,10 @@ export default {
         Math.ceil(res.duration / 1000)
       );
     })
-    recorderManager.onFrameRecorded(({ frameBuffer, isLastFrame }) => {
-      console.log('监听已录制完指定帧大小的文件事件。如果设置了 frameSize，则会回调此事件。')
-      console.log(frameBuffer, isLastFrame)
-    })
+    // recorderManager.onFrameRecorded(({ frameBuffer, isLastFrame }) => {
+    //   console.log('监听已录制完指定帧大小的文件事件。如果设置了 frameSize，则会回调此事件。')
+    //   console.log(frameBuffer, isLastFrame)
+    // })
     recorderManager.onError(() => {
       console.log('监听录音错误事件')
     })
@@ -735,7 +735,6 @@ var sec_to_time = function(s) {
   height: 100px;
   color: #bbbbbb;
   background-color: #f0f0f0;
-  border-radius: 6px;
   display: inline-block;
   text-align: center;
   vertical-align: top;

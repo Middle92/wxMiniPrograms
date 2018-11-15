@@ -25,7 +25,7 @@
                 </li>
 
                 <div v-if="item.data.length <= 0" class="data-none">
-                    <span>暂无数据</span>
+                    <!-- <span>暂无数据</span> -->                 <img src="/static/bg-5.png" mode="aspectFit" alt="">
                 </div>
             </ul>
         </div>

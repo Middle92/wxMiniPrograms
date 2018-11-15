@@ -146,7 +146,7 @@ export default {
             ctx.fillStyle = "#ffffff";
             ctx.shadowBlur=10;
             ctx.shadowOffsetY=2;
-            ctx.shadowColor = '#000';
+            ctx.shadowColor = 'rgba(0,0,0,.5)';
             roundRect(ctx, 10, 40, 280, 170, 10);
             ctx.fill();
             ctx.shadowBlur=0;
@@ -205,7 +205,7 @@ export default {
 
 <style scoped>
 .container {
-  background: #f7f7f7;
+  background: #e5e5e5;
 }
 canvas {
   margin-top: 25px;

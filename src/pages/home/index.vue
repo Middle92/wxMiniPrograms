@@ -63,7 +63,7 @@
                   </ul>
                 </li>
                 <div v-if="item.data.length <= 0" class="data-none">
-                  <span>暂无数据</span>
+                  <!-- <span>暂无数据</span> -->                 <img src="/static/bg-5.png" mode="aspectFit" alt="">
                 </div>
               </ul>
             </div>
@@ -228,15 +228,12 @@ export default {
       });
     },
     touchstart(e) {
-      console.log(e);
       this.touchstartval = e.clientY;
     },
     touchmove(e) {
       if(e.clientY > this.touchstartval) {
-        console.log('down')
         this.plusicon = '20px';
       } else {
-        console.log('up')
         this.plusicon = '-45px';
       }
     }

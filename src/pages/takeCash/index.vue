@@ -25,7 +25,7 @@
         </div>
 
         <div class="btns">
-            <button class="primary" @click="takeCash">立即提现</button>
+            <button class="primary" @click="takeCash" :disabled="disabled">立即提现</button>
         </div>
     </div>
 </template>
@@ -52,7 +52,8 @@ export default {
           }
         }
       ],
-      tips: null
+      tips: null,
+      disabled: false
     };
   },
   methods: {
@@ -76,6 +77,7 @@ export default {
     takeCash() {
       let item = this.takeMoney.filter(item => item.active)[0];
       if (item.title != "其他") {
+        this.disabled = true;
         wxRequest(
           {
             url: "/journalAccountController/withdraw",
@@ -95,7 +97,10 @@ export default {
               success() {
                 setTimeout(() => {
                   wx.navigateBack({
-                    delta: 1
+                    delta: 1,
+                    success:() => {
+                      this.disabled = false;
+                    }
                   })
                 }, 2000)
               }
@@ -106,7 +111,10 @@ export default {
             wx.showToast({
               mask: true,
               icon: "none",
-              title: data.message
+              title: data.message,
+              success: () => {
+                this.disabled = false;
+              }
             });
           });
       }

@@ -10,7 +10,7 @@
         <p class="balance">当前余额￥{{balance}}</p>
 
         <div class="btns">
-            <button class="primary" @click="takeCash">立即提现</button>
+            <button class="primary" @click="takeCash" :disabled="disabled">立即提现</button>
         </div>
 
         <div class="tips" v-html="tips">
@@ -27,7 +27,8 @@ export default {
   data() {
     return {
       value: null,
-      tips: null
+      tips: null,
+      disabled: false
     };
   },
   computed: {
@@ -38,6 +39,7 @@ export default {
   methods: {
     takeCash() {
       if (this.value && this.value.trim() != "") {
+        this.disabled = true;
         wxRequest(
           {
             url: "/journalAccountController/withdraw",
@@ -53,11 +55,15 @@ export default {
         )
           .then(response => {
             wx.showToast({
+              mask: true,
               title: response.message,
               success() {
                 setTimeout(() => {
                   wx.navigateBack({
-                    delta: 2
+                    delta: 2,
+                    success: () => {
+                      this.disabled = false;
+                    }
                   })
                 }, 2000)
               }
@@ -66,8 +72,12 @@ export default {
           .catch(response => {
             let data = response.data;
             wx.showToast({
+              mask: true,
               icon: "none",
-              title: data.message
+              title: data.message,
+              success: () => {
+                this.disabled = false;
+              }
             });
           });
       }

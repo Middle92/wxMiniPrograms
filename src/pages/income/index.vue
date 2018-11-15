@@ -40,7 +40,7 @@
                 </div>
 
                 <div v-if="incomeList.list.length <= 0" class="data-none">
-                    <span>暂无数据</span>
+                    <!-- <span>暂无数据</span> -->                 <img src="/static/bg-5.png" mode="aspectFit" alt="">
                 </div>
             </div>
         </div>
@@ -99,10 +99,14 @@ export default {
   mounted() {
   },
   onShareAppMessage() {
-    return {
+    let obj = {
       title: '推荐有奖',
       path: '/pages/index/main?inviterId=' + stores.state.buyerId,
     }
+    if(Number(this.todayIncome) <= 0) {
+      obj.imageUrl = '/static/bg-6.jpg';
+    }
+    return obj
   },
   onPullDownRefresh: function(e) {
     this.incomeList.pageNo = 1
@@ -142,9 +146,10 @@ export default {
       },
       true
     ).then(response => {
-      incomeList.list = [...incomeList.list, ...response.data.list];
+      console.log(response)
+      this.incomeList.list = [...this.incomeList.list, ...response.data.list];
       if (response.data.list.length > 0) {
-        incomeList.pageNo++;
+        this.incomeList.pageNo++;
       }
       wxRequest(
         {
