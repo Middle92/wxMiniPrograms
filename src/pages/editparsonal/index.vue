@@ -184,6 +184,7 @@ export default {
 .content > input {
     height:32px;
     line-height:32px;
+    font-size:30rpx;
 }
 /* submit-btns */
 .submit-btns {

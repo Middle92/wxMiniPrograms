@@ -2,7 +2,7 @@
     <div class="container">
         <ul class="statement">
             <li class="statement-item" v-for="(item, index) in Data.data" :key="index">
-                <img :src="item.productImg ? baseUrl + item.productImg : '/static/logo.jpg'" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+                <img :src="item.productImg ? baseUrl + item.productImg : '/static/logo.png'" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                 <div class="statement-default">
                     <p class="statement-title">{{item.product}}</p>
                     <div class="statement-info">

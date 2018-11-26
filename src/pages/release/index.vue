@@ -9,7 +9,7 @@
         <div class="release-content">
             <ul class="release" v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
                 <li class="release-item" v-for="(ite, inde) in item.data" :key="inde" :data-id="ite.id" :data-status="item.status" @click="itemDefault">
-                    <img :src="ite.productImg ? baseUrl + ite.productImg : '/static/logo.jpg'" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
+                    <img :src="ite.productImg ? baseUrl + ite.productImg : '/static/logo.png'" alt="" style="width: 68px; height: 68px; border-radius: 4px;">
                     <div class="release-default">
                         <p class="release-title">{{ite.product}}</p>
                         <div class="release-info">

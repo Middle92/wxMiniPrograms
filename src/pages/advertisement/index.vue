@@ -1,7 +1,8 @@
 <template>
     <div class='container'>
-        <img class="bg-image" :src="bgiamge" alt="">
-        <img class="ad-image" v-for="(item, index) in adimages" :key="index" :src="item" alt="">
+        <img class="bg-image" src="/static/bg-2.png" alt="">
+        <img class="ad-image" src="/static/ad-3.png" mode="aspectFit" alt="">
+        <img class="ad-image" src="/static/ad-4.png" mode="aspectFit" alt="">
         <ul class="bottomBtn">
             <li v-for="(item, index) in bottom" :key="index" @click="item.callback">
                 {{item.title}}
@@ -40,11 +41,12 @@ export default {
     left:0px;
     width:100%;
     height:100%;
+    z-index: -1;
 }
 
 .ad-image {
     margin-top: 1rem;
-    z-index:10;
+    z-index: 10;
 }
 
 .ad-image:nth-of-type(2) {

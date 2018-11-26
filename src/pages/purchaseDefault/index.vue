@@ -108,9 +108,9 @@ export default {
       // 产品
       product: null,
       // 产品字符长度
-      productLength: 30,
+      productLength: 50,
       // 展示产品字符长度
-      productLengthValue: 30,
+      productLengthValue: 50,
       // 产品数量
       productNumber: null,
       // 产品单位值
@@ -257,7 +257,7 @@ export default {
       };
 
       for (let key in obj) {
-        if (!obj[key] && key != "imgs") {
+        if (!obj[key] && key != "imgs" && key != "explained") {
           wx.showToast({
             mask: true,
             icon: "none",
@@ -381,12 +381,15 @@ export default {
             true
           )
             .then(response => {
+              console.log('then', response)
               let id = response.data.id;
-              wx.navigateTo({
+              wx.redirectTo({
                 url: `/pages/success/main?id=${id}&status=1`
               });
+              console.log('then', wx.navigateTo)
             })
             .catch(response => {
+              console.log('catch', response)
               wx.showToast({
                 title: response.data.message,
                 icon: "none",
@@ -635,14 +638,16 @@ var sec_to_time = function(s) {
 }
 
 .form-group label {
-  width: 100px;
+  width: 120rpx;
+  font-size: 30rpx;
+  margin-right:38rpx;
 }
 
 .flex-1 {
   flex: 1;
   position: relative;
-  padding: 0 20px 0 10px;
-  font-size: 14px;
+  padding-right: 20px;
+  font-size: 26rpx;
 }
 
 .flex-1 .holder-right {
@@ -660,23 +665,27 @@ var sec_to_time = function(s) {
   width: 100%;
   background-color: #ffffff;
   box-sizing: border-box;
-  padding: 20px;
+  padding: 40rpx 0;
   margin-bottom: 10px;
 }
 
 .recorder {
-  width: 100%;
+  width: 661rpx;
   white-space: nowrap;
   text-align: center;
-  font-size: 16px;
-  padding: 30px 0;
   background-color: #f0f0f0;
   margin: auto;
+  height: 261rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .recorder p {
   color: #888888;
-  margin: 10px 0;
+  margin-top: 30rpx;
+  font-size: 30rpx;
 }
 
 .supplement-cont {
@@ -716,13 +725,13 @@ var sec_to_time = function(s) {
 }
 
 .choose-image .choose-item {
-  width: 100px;
-  height: 100px;
+  width: 160rpx;
+  height: 160rpx;
   box-sizing: border-box;
   overflow: hidden;
   border: 1px solid #dddddd;
   display: inline-block;
-  margin: 0 10px 10px 0;
+  margin: 0 10rpx 10rpx 0;
 }
 
 .choose-image .choose-item img {
@@ -730,17 +739,21 @@ var sec_to_time = function(s) {
 }
 
 .choose-image .add-btn {
-  font-size: 14px;
-  width: 100px;
-  height: 100px;
+  font-size: 22rpx;
+  width: 160rpx;
+  height: 160rpx;
   color: #bbbbbb;
   background-color: #f0f0f0;
   display: inline-block;
   text-align: center;
   vertical-align: top;
   margin: 0 10px 10px 0;
-  padding-top: 22px;
+  padding-top: 29rpx;
   box-sizing: border-box;
+}
+
+.choose-image .add-btn p {
+  margin-top: 30rpx;
 }
 
 .supplement-btn {
@@ -752,7 +765,7 @@ var sec_to_time = function(s) {
 }
 
 .submit-btns {
-  padding: 10px 20px;
+  padding: 30rpx 55rpx;
   width: 100%;
   box-sizing: border-box;
   background: #f5f5f5;
@@ -764,6 +777,9 @@ var sec_to_time = function(s) {
   text-align: center;
   padding-bottom: 20px;
   background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .company-info img {
@@ -833,14 +849,6 @@ var sec_to_time = function(s) {
 
 .voice-content {
   padding: 0px 20px;
-}
-
-cover-view {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
 }
 
 @keyframes recorder {

@@ -12,13 +12,11 @@
                     >
                     <img :src="item.comLogo" alt="">
                     <div class="info">
-                        <p class="title">{{item.domian}}</p>
+                        <p class="title">{{item.comName}}</p>
                         <p class="information">
-                            {{item.userName}}&nbsp;&nbsp;&nbsp;
-                            {{item.userPhone}}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-                            {{item.userProCity}}
+                            {{item.userName}}&nbsp;&nbsp;&nbsp;{{item.userPhone}}&nbsp;&nbsp;&nbsp;<span v-if="item.userProCity">|&nbsp;&nbsp;&nbsp;{{item.userProCity}}</span>
                         </p>
-                        <p class="class">主营：{{item.zycp || ''}}</p>
+                        <p class="class">主营：{{item.zycp || '无'}}</p>
                     </div>
                 </div>
                 <div class="list-operating">

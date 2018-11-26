@@ -28,36 +28,43 @@
 
             <div class="tab-content">
               <ul v-for="(item, index) in tab" :key="index" v-show="tab[index].active">
-                <li v-for="(ite, inde) in item.data" :key="inde">
+                <li v-for="(ite, inde) in item.data" :key="inde" class="box-item">
                   <div class="product" :data-id="ite.id" :data-status="ite.status" @click="toDefault">
-                      <img :src="ite.productImg ? baseUrl + ite.productImg : '/static/logo.jpg'"/>
+                      <img :src="ite.productImg ? baseUrl + ite.productImg : '/static/logo.png'" mode="aspectFill"/>
                       <div class='info'>
                           <p class='title'>{{ite.product}}</p>
                           <div class='detail-p'>
-                              <p>数量：{{ite.number }}</p>
-                              <p>规格：{{ite.unit}}</p>
+                              <p>数量:{{ite.number }}</p>
+                              <p>规格:{{ite.unit}}</p>
                           </div>
-                          <ul class="additional">
-                              <li>阅读：{{ite.browseCount}}次</li>
-                              <li>报价：{{ite.offerCount}}次</li>
-                              <li>收益：{{ite.totalIncome}}元</li>
+                          <ul class="additional" style="background:#fff;">
+                              <li class="innerText">阅读:{{ite.browseCount}}次</li>
+                              <li class="innerText">报价:{{ite.offerCount}}次</li>
+                              <li class="innerText">收益:{{ite.totalIncome}}元</li>
                           </ul>
                       </div>
                   </div>
                   <ul class="share"><!-- v-if="ite.read" -->
-                      <li 
+                      <li
+                        class="li-item"
                         v-for="(it, ind) in share" 
                         :key="ind" 
                         :data-id="ite.id" 
                         @click="it.callback"
                         v-if="!(it.title == '邀请报价' && item.title == '已结束')">
-                          <button v-if="it.openType" :data-id="ite.id" :data-status="ite.status" open-type="share">
-                            <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
-                            {{it.title}}
+                          <button class="myShareBtn"
+                           v-if="it.openType" :data-id="ite.id" :data-status="ite.status" open-type="share">
+                            <img class="btnIcon" mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
+                            <span class="btnText">
+                              {{it.title}}
+                            </span>
+                           
                           </button>
-                          <button v-else>
-                            <img mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
-                            {{it.title}}
+                          <button class="myShareBtn" v-else>
+                            <img class="btnIcon" mode="widthFix" style="width: 12px;" :src="it.icon" alt="">
+                            <span class="btnText">
+                              {{it.title}}
+                            </span>
                           </button>
                       </li>
                   </ul>
@@ -150,7 +157,7 @@ export default {
         {
           title: "邀请报价",
           icon: "/static/icon-7.png",
-          openType: true,
+          openType: true
         },
         {
           title: "分享到朋友圈",
@@ -176,8 +183,9 @@ export default {
       // 滚动tab 固定顶部
       scrollTop: null,
       fixedTab: false,
-      plusicon: '20px',
-      plustitle: true
+      plusicon: "20px",
+      plustitle: true,
+      onPageScroll: false
     };
   },
   computed: {
@@ -231,18 +239,33 @@ export default {
       this.touchstartval = e.clientY;
     },
     touchmove(e) {
-      if(e.clientY > this.touchstartval) {
-        this.plusicon = '20px';
+      if(this.onPageScroll) {
+        if (e.clientY > this.touchstartval) {
+          this.plusicon = "20px";
+          this.plustitle = true;
+        } else {
+          this.plusicon = "-45px";
+          this.plustitle = false;
+        }
       } else {
-        this.plusicon = '-45px';
+        this.plusicon = "20px";
+      }
+    }
+  },
+  watch: {
+    plustitle(val, oldval) {
+      if(val) {
+        setTimeout(() => {
+          this.plustitle = false;
+        }, 3000)
       }
     }
   },
   mounted() {
     wx.showLoading({
-        title: '加载中',
-        mask: true
-    })
+      title: "加载中",
+      mask: true
+    });
     this.tab.map(item => {
       store.getters
         .purchaseList({
@@ -276,12 +299,13 @@ export default {
             _this.scrollTop = rect.top;
           })
           .exec();
-        this.isOpacity = true; 
+        this.isOpacity = true;
         wx.hideLoading();
       }, 300);
     });
   },
   onPageScroll: function(e) {
+    this.onPageScroll = e.scrollTop > 10 ? true : false;
     this.fixedTab = e.scrollTop >= this.scrollTop;
   },
   onPullDownRefresh: function(e) {
@@ -325,24 +349,30 @@ export default {
 
     setTimeout(() => {
       this.plustitle = false;
-    }, 3000)
+    }, 3000);
   },
   onShareAppMessage({ target }) {
-    let id = target.dataset.id
-    let status = target.dataset.status
+    let id = target.dataset.id;
+    let status = target.dataset.status;
     return {
-      title: '采购单详情',
-      path: '/pages/index/main?inviterId=' + store.state.buyerId + '&page=purchaseOrderDefault&pagetype=offer&id=' + id + '&status=' + status
-    }
+      title: "采购单详情",
+      path:
+        "/pages/index/main?inviterId=" +
+        store.state.buyerId +
+        "&page=purchaseOrderDefault&pagetype=offer&id=" +
+        id +
+        "&status=" +
+        status
+    };
   }
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .container {
   display: initial;
-  float:left;
-  width:100%;
+  float: left;
+  width: 100%;
   height: auto;
   font-size: 0;
 }
@@ -414,14 +444,25 @@ image {
   border-bottom: 0.06rem solid #4f95f7;
   color: #4f95f7;
 }
-
+.tab-content {
+  ul {
+    // background: #f5f5f5;
+    .box-item {
+      margin-bottom: 10px;
+      background: #fff;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
 .tab-content > ul > li {
   padding: 0 0.2rem;
   box-shadow: 0rpx 5rpx 3rpx #ececec;
 }
 
 .product {
-  padding: 12px;
+  padding: 12px 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,6 +490,7 @@ image {
 .product > .info > .detail-p {
   font-size: 12px;
   color: #666666;
+  margin-bottom: 15px;
 }
 
 .product > .info > .detail-p > p {
@@ -456,29 +498,89 @@ image {
   margin-right: 0.2rem;
 }
 
-.product > .info > .additional > li {
-  font-size: 0.24rem;
-  display: inline-block;
-  color: #888888;
-  padding-right: 0.15rem;
-  border-right: 0.01rem solid #c7c7c7;
-  margin-right: 0.15rem;
+.product > .info > .detail-p > p:first-child {
+  margin-right: 17.5px;
 }
 
-.product > .info > .additional > li:last-child {
-  border: none;
+.product > .info > .additional > li {
+  font-size: 11px;
+  display: inline-block;
+  color: #888888;
+  margin-right: 17.5px;
+  &:last-child {
+    margin-right: 0;
+    &:after {
+      background: #fff;
+    }
+  }
+  &:after {
+    content: "";
+    width: 1px;
+    height: 10px;
+    background: #c7c7c7;
+    position: relative;
+    top: 1px;
+    left: 9px;
+    display: inline-block;
+  }
 }
 
 .share {
-  border-top: 0.01rem solid #e9e9e9;
+  // border-top: 0.01rem solid #e9e9e9;
   /* padding: 10px 0; */
   display: flex;
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 350px;
+    height: 1px;
+    background: #e9e9e9;
+    // background: red;
+  }
+  .btnIcon,
+  .btnText {
+    vertical-align: middle;
+  }
+  .li-item {
+    height: 40px;
+    background: #fff;
+    position: relative;
+    &:last-child {
+      &:after {
+        background: #fff;
+      }
+    }
+    .myShareBtn {
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .btnText {
+        margin-left:5px;
+      }
+    }
+    &:after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 25px;
+      background: #e9e9e9;
+      // background: red;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+    }
+  }
 }
 
 .share li {
   display: inline-block;
   box-sizing: border-box;
-  
+
   flex: 1;
 }
 
@@ -486,15 +588,18 @@ image {
   font-size: 12px;
   text-align: center;
   color: #3f8bf4;
-  background-color: transparent;
+  background-color: #fff;
+  border: none;
+  white-space:nowrap;
+}
+
+.share li button::after {
   border: none;
 }
 
-.share li button::after{ border: none; }
-
-.share li:not(:last-child) {
-  border-right: 1px solid #e9e9e9;
-}
+// .share li:not(:last-child) {
+//   border-right: 1px solid #e9e9e9;
+// }
 
 /* icon */
 .plusIcon,
@@ -518,7 +623,7 @@ image {
   justify-content: center;
   left: 50%;
   margin-left: -0.5rem;
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .plusIcon .plus-title {
@@ -531,6 +636,8 @@ image {
   background-color: #2a70d4;
   position: absolute;
   top: -45px;
+  left: 0;
+  margin-left:-28rpx;
   border-radius: 4px;
 }
 

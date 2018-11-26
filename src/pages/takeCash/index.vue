@@ -150,6 +150,7 @@ export default {
   width: 100%;
   border: 1px solid #e4e4e4;
   padding: 20px 0;
+  background-color: #ffffff;
 }
 .mode ul {
   width: 100%;
@@ -206,6 +207,7 @@ export default {
 
 .money ul li div {
   border: 1px solid #e4e4e4;
+  background-color: #ffffff;
   padding: 28px 0;
 }
 
@@ -226,8 +228,7 @@ export default {
   box-sizing: border-box;
   position: fixed;
   bottom: 0;
-  padding: 10px;
-  background: #fff;
+  padding: 20rpx 55rpx;
   z-index: 20;
 }
 </style>

@@ -16,12 +16,11 @@
 import store from "@/stores";
 import wxRequest from "@/utils/request";
 
-async function setUserInfo(url) {
-  wx.showToast({
+async function setUserInfo(url, query) {
+  wx.showLoading({
     mask: true,
-    icon: "loading",
+    mask: true,
     title: "登录中",
-    duration: 99999
   });
   // 获取userInfo
   new Promise((resolve, rejects) => {
@@ -48,7 +47,8 @@ async function setUserInfo(url) {
       // 请求授权注册登录
       return new Promise((resolve, rejects) => {
         // 获取url参数
-        let inviterId = wx.getLaunchOptionsSync().query.inviterId;
+        console.log(query)
+        let inviterId = query.inviterId;
 
         let obj = {
           code: store.state.code,
@@ -67,6 +67,7 @@ async function setUserInfo(url) {
             resolve();
           })
           .catch(e => {
+            wx.hideLoading()
             wx.showToast({
               mask: true,
               icon: "none",
@@ -85,6 +86,7 @@ async function setUserInfo(url) {
       )
         .then(response => {
           store.dispatch("setParsonal", response.data);
+          wx.hideLoading()
           wx.showToast({
             mask: true,
             icon: "success",
@@ -99,6 +101,7 @@ async function setUserInfo(url) {
           });
         })
         .catch(e => {
+          wx.hideLoading()
           wx.showToast({
             mask: true,
             icon: "none",
@@ -117,24 +120,22 @@ export default {
       interval: 4000,
       duration: 500,
       // btnText: "登录授权",
-      type: null
+      type: null,
+      query: {}
     };
   },
   beforeMount() {
     if (!this.type) {
       wx.getSetting({
-        success(res) {
+        success:(res) => {
           if (res.authSetting["scope.userInfo"]) {
             // 用户已授权
-            let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
+            let { page, pagetype, id, status } = this.query;
             if(page) {
-              setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
+              setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`, this.query);
             } else {
-              setUserInfo("/pages/home/main");
+              setUserInfo("/pages/home/main", this.query);
             }
-          } else {
-            // 用户未授权
-            // self.btnText = "登录授权";
           }
         }
       });
@@ -147,15 +148,20 @@ export default {
   },
   methods: {
     bindGetUserInfo(e) {
-      if (wx.canIUse("button.open-type.getUserInfo")) {
-        let { page, pagetype, id, status } = wx.getLaunchOptionsSync().query;
+      if (wx.canIUse("button.open-type.getUserInfo") && e.mp.detail.userInfo) {
+        let { page, pagetype, id, status } = this.query;
         if(page) {
-          setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`);
+          setUserInfo(`/pages/${page}/main?type=${pagetype}&id=${id}&status=${status}`, this.query);
         } else {
-          setUserInfo("/pages/home/main");
+          setUserInfo("/pages/home/main", this.query);
         }
       } else {
         console.log("请升级微信");
+        wx.showToast({
+          mask: true,
+          icon: "none",
+          title: "登录失败"
+        });
       }
     },
     toHome() {
@@ -178,6 +184,7 @@ export default {
   },
   onLoad(query) {
     this.type = query.type;
+    this.query = query;
   }
 };
 </script>

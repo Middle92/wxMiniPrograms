@@ -1,7 +1,9 @@
 <template>
     <div class="container">
         <canvas canvas-id="shareCanvas" :style="{width:canvasWidth + 'px', height: canvasHeight + 'px'}"></canvas>
-        <button class="primary" @click="exportImage">导出图片</button>
+        <cover-view>
+          <button class="primary" @click="exportImage">导出图片</button>
+        </cover-view>
     </div>
 </template>
 
@@ -153,12 +155,12 @@ export default {
             ctx.shadowOffsetY=0;
 
             // 标题文字
-            ctx.font = "normal normal bold 18px arial";
+            ctx.font = "normal normal bold 18px 微软雅黑";
             ctx.setFillStyle("#333");
             ctx.fillText(self.data.product, 25, 80);
 
             // 时间文字
-            ctx.font = "normal normal normal 14px arial";
+            ctx.font = "normal normal normal 14px 微软雅黑";
             ctx.setFillStyle("#888");
             ctx.fillText(
               `${self.data.buyDeadline}丨 询盘总收益${self.data.totalIncome}元`,
@@ -170,12 +172,12 @@ export default {
             circleImg(ctx, self.headerImg, 25, 120, 30);
 
             // 用户名
-            ctx.font = "normal normal normal 16px arial";
+            ctx.font = "normal normal normal 16px 微软雅黑";
             ctx.setFillStyle("#333");
             ctx.fillText(self.data.name, 95, 142);
 
             // 公司名称
-            ctx.font = "normal normal normal 12px arial";
+            ctx.font = "normal normal normal 12px 微软雅黑";
             ctx.setFillStyle("#888");
             ctx.fillText(self.data.company, 95, 170);
 
@@ -210,10 +212,16 @@ export default {
 canvas {
   margin-top: 25px;
 }
-.primary {
+cover-view {
   position: fixed;
-  bottom: 25px;
-  width: 80%;
+  bottom: 64rpx;
+  width: 620rpx;
+  left: 50%;
+  margin-left: -310rpx;
+}
+
+cover-view button {
+  width: 100%;
 }
 </style>
 

@@ -2,7 +2,7 @@
     <div class="container">
         <div class="statement-default">
             
-            <img :src="Data.productImg ? baseUrl + Data.productImg : '/static/logo.jpg'" alt="">
+            <img :src="Data.productImg ? baseUrl + Data.productImg : '/static/logo.png'" alt="">
             <div class="statement-default-default">
                 <p class="statement-default-title">{{Data.product}}</p>
                 <div class="statement-default-info">

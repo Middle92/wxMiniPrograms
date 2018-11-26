@@ -46,10 +46,10 @@
         </div>
         <!-- 操作按钮 -->
         <div class='btns'>
-            <div class='btn'>
+            <div class='btn' style="padding-left: 45rpx">
                 <button class='default' @click="takecash">提现</button>
             </div>
-            <div class='btn'>
+            <div class='btn' style="padding-right: 45rpx">
                 <button class='primary' open-type="share">邀请好友赚收益</button>
             </div>
         </div>
@@ -198,13 +198,13 @@ export default {
   align-items: initial;
 }
 /* income-content */
-.income-content {
+/* .income-content {
   margin-bottom: 50px;
-}
+} */
 
 /* today-income */
 .today-income {
-  height: 2rem;
+  height: 240rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,8 +224,12 @@ export default {
 
 /* all-income */
 .all-income {
+  height: 100rpx;
+  box-sizing: border-box;
   display: flex;
-  padding: 10px 15px;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0px;
   background-color: rgba(22, 104, 230, 1);
   color: #e8ebef;
 }
@@ -271,27 +275,33 @@ export default {
 }
 
 /* income-detail */
+.income-detail {
+  margin-bottom: 100rpx;
+}
 .income-detail .item {
   display: flex;
   flex-direction: cloumn;
-  padding: 10px 20px;
+  padding: 0px 24rpx;
+  height: 139rpx;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f0f0f0
 }
 
 .income-detail .item > .item-left {
   flex: 1;
-  font-size: 12px;
+  font-size: 24rpx;
   color: #adadad;
-  line-height: 30px;
 }
 
 .income-detail .item > .item-left > .title {
   color: #333333;
-  font-size: 15px;
+  font-size: 30rpx;
+  margin-bottom: 30rpx;
 }
 
 .income-detail .item > .item-right {
   display: flex;
-  padding: 0 10px;
   align-items: center;
   font-size: 14px;
 }

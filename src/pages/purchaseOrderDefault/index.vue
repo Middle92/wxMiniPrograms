@@ -26,8 +26,8 @@
                         <div class="group-content flex">
                             <span>{{data && data.price}}</span>元
                             <div class="tip">
-                                <!-- <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 18px;" @click="isTip = !isTip"/> -->
-                                <i class="iconfont icon-wenhao" @click="isTip = !isTip"></i>
+                                <img src="/static/icon-15.png" mode="widthFix" alt="" style="width: 30rpx;" @click="isTip = !isTip"/>
+                                <!-- <i class="iconfont icon-wenhao" @click="isTip = !isTip"></i> -->
                                 <div class="tip-text" v-show="isTip">供应商获取联系方式需支付的价格</div>
                             </div>
                         </div>
@@ -66,7 +66,8 @@
                 <div class="group-content">
                     阅读{{data && data.browseCount}}&nbsp;&nbsp;&nbsp;&nbsp;报价{{data && data.offerCount}}
                     <span>
-                        <i class="iconfont icon-dingweiweizhi"></i>
+                        <!-- <i class="iconfont icon-dingweiweizhi"></i> -->
+                        <img src="/static/icon-24.png" mode="widthFix" alt="" style="width: 15rpx;"/>
                         {{data && data.companyAddress}}
                     </span>
                 </div>
@@ -74,7 +75,9 @@
             <!-- <div class="over"> ~ 全部加载完毕 ~ </div> -->
         </div>
         <div class="footer">
-            <button v-if="type == 'offer'" class="primary" @click="toMiniProgram">立即报价</button>
+            <div class="btn" v-if="type == 'offer'">
+                <button class="primary" @click="toMiniProgram">立即报价</button>
+            </div>
             <ul v-else-if="(status == 2 || status == 3) && type != 'offer'">
                 <li 
                     v-for="(item, index) in share" 
@@ -261,7 +264,14 @@ var sec_to_time = function(s) {
 
 <style scoped>
 .container {
-    background-color: #f7f7f7;
+    background-color: #f5f5f5;
+    height:auto;
+    display:block;
+    flex-direction:column;
+    align-items:center;
+    box-sizing:border-box;
+    padding-bottom:47px;
+    min-height: 100%;
 }
 
 .title, .content, .footer {
@@ -271,7 +281,6 @@ var sec_to_time = function(s) {
 }
 
 .footer {
-    padding: 10px;
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -279,6 +288,7 @@ var sec_to_time = function(s) {
 
 .footer ul {
     display: flex;
+    padding: 10px;
 }
 
 .footer ul li {
@@ -289,10 +299,16 @@ var sec_to_time = function(s) {
 }
 
 .footer ul li button {
-    font-size: 14px;
+    font-size: 24rpx;
+    line-height: 46rpx;
+    height:46rpx;
     color: #3f8bf4;
     padding: 0;
     background-color: #fff;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .footer ul li button::after{ border: none; }
@@ -301,36 +317,49 @@ var sec_to_time = function(s) {
     border-right: 1px solid #e9e9e9
 }
 
+.footer ul li button img {
+    margin-right: 12rpx;
+}
+
+.footer .btn {
+    padding: 10px;
+}
+
 .title {
     margin-bottom: 10px;
-    padding: 10px 20px;
+    padding: 15px 12px;
     position: relative;
 }
 
 .title > h1 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
 }
 
 .title > p {
-    font-size: 12px;
+    font-size: 11px;
     color: #333333;
 }
 
 .title > p > span {
     color: #f77a1f;
-    font-size: 16px;
     font-weight: bold;
 }
 
 .product-info, .supplement {
-    padding: 0 20px;
+    padding: 0 24rpx;
+    border-bottom:2rpx solid #f0f0f0;
+}
+
+.supplement .group {
+    padding-bottom:0;
 }
 
 .user-info {
     display: flex;
-    padding: 10px 20px;
+    padding:20rpx 24rpx;
+    border-bottom:2rpx solid #f0f0f0;
 }
 
 .user-info img {
@@ -341,9 +370,9 @@ var sec_to_time = function(s) {
 }
 
 .user-info .user-name {
-    font-size: 16px;
+    font-size: 15px;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
 }
 
 .user-info .company {
@@ -353,18 +382,18 @@ var sec_to_time = function(s) {
 
 .group {
     display: flex;
-    padding: 10px 0;
+    padding: 30rpx 0;
 }
 
 .group label {
-    width: 80px;
-    font-size: 16px;
-    /* line-height: 50px; */
+    font-size: 28rpx;
+    margin-right: 41rpx;
+    width:120rpx;
 }
 
 .group .group-content {
     color: #888888;
-    font-size: 16px;
+    font-size: 28rpx;
     flex: 1;
     align-items:center;
 }
@@ -374,16 +403,20 @@ var sec_to_time = function(s) {
 }
 
 .group-content .images {
-    margin: 10px 0;
+    margin-top: 30rpx;
 }
 
 .group-content .images .image-item {
-    width: 30%;
-    margin-right: 3%;
-    margin-bottom: 5px;
-    height:100px;
+    width: 166rpx;
+    margin-right: 26rpx;
+    margin-bottom: 10rpx;
+    height:166rpx;
     overflow:hidden;
     display: inline-block;
+}
+
+.group-content .images .image-item:nth-of-type(3n) {
+    margin-right: 0;
 }
 
 .group-content .images .image-item img {
@@ -435,12 +468,12 @@ var sec_to_time = function(s) {
 
 .other {
     width: 100%;
-    padding: 0 20px;
+    padding: 0 24rpx;
     box-sizing: border-box;
 }
 
 .other .group-content {
-    font-size: 14px;
+    font-size: 24rpx;
     color: #999999;
 }
 
@@ -488,7 +521,7 @@ var sec_to_time = function(s) {
     background-color:#bbb;
     color:#fff;
     border-radius:3px;
-    margin-top: -10px;
+    margin-top: -15rpx;
 }
 
 .tip-text::before {

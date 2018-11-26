@@ -185,11 +185,18 @@ export default {
 /* pages/personal/personal.wxss */
 /* personal-item */
 .personal-item {
-  border-bottom: 1px solid #f2f2f2;
-  padding: 5px 20px;
+  
+  padding-left: 28rpx;
   width: 100%;
   box-sizing: border-box;
   background-color: #fff;
+}
+
+.personal-item .input {
+  border-bottom: 1px solid #f2f2f2;
+  padding-right: 52rpx;
+  padding-top: 11rpx;
+  padding-bottom: 11rpx;
 }
 
 /* submit-btns */
@@ -209,13 +216,14 @@ export default {
   display: flex;
   color: #cccccc;
   line-height: 0.8rem;
-  font-size: 0.3rem;
+  font-size: 26rpx;
   align-items: center;
 }
 
 .input > .title {
   flex: 1;
   color: #343434;
+  font-size: 30rpx;
 }
 
 .input > image {
