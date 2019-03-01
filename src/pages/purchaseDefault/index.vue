@@ -132,7 +132,7 @@ export default {
       recorderDuration: null,
       recorderDurationText: null,
       // 补充说明
-      supplementarySpecification: null,
+      supplementarySpecification: '',
       // 补充说明字符串长度
       supplementarySpecificationLength: 200,
       // 展示补充说明字符串长度
@@ -381,15 +381,12 @@ export default {
             true
           )
             .then(response => {
-              console.log('then', response)
               let id = response.data.id;
               wx.redirectTo({
                 url: `/pages/success/main?id=${id}&status=1`
               });
-              console.log('then', wx.navigateTo)
             })
             .catch(response => {
-              console.log('catch', response)
               wx.showToast({
                 title: response.data.message,
                 icon: "none",
@@ -529,10 +526,7 @@ export default {
         Math.ceil(res.duration / 1000)
       );
     })
-    // recorderManager.onFrameRecorded(({ frameBuffer, isLastFrame }) => {
-    //   console.log('监听已录制完指定帧大小的文件事件。如果设置了 frameSize，则会回调此事件。')
-    //   console.log(frameBuffer, isLastFrame)
-    // })
+
     recorderManager.onError(() => {
       console.log('监听录音错误事件')
     })

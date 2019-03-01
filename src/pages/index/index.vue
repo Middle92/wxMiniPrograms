@@ -109,6 +109,11 @@ async function setUserInfo(url, query) {
           });
         });
     });
+  
+  // 测试跳转, 线上请删除
+  wx.redirectTo({
+    url: url
+  });
 }
 
 export default {
