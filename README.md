@@ -1,8 +1,8 @@
-# bcsj
+# 小程序
 
-> A Mpvue project
+> mpvue 小程序项目
 
-## Build Setup
+## 构建命令
 
 ``` bash
 # install dependencies
@@ -34,6 +34,12 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
 "pages/advertisement/main", // 首页头部广告，“推荐玩法”
 "pages/purchaseDefault/main" // 添加采购商
 "pages/statement/main" // 我的申诉
+"pages/statementDefault/main", // 申诉详情
+"pages/release/main", // 我的发布
+"pages/takeCash/main", // 提现页面
+"pages/otherTakeCash/main", // 其他提现页面
+"pages/success/main", // 成功页面
+"pages/share/main" // 分享页面
 ```
 
 #filter(mpvue过滤器无法使用)
